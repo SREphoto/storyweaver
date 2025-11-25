@@ -1,0 +1,5 @@
+{
+  "name": "StoryWeaver",
+  "description": "An AI-powered assistant to help writers flesh out story ideas, create deep character profiles, analyze videos for inspiration, and generate structured timelines from plot points.",
+  "requestFramePermissions": []
+}
