@@ -2,19 +2,19 @@
 
 
 export enum CharacterType {
-  PROTAGONIST = 'Protagonist',
-  ANTAGONIST = 'Antagonist',
-  DEUTERAGONIST = 'Deuteragonist',
-  MENTOR = 'Mentor',
-  LOVE_INTEREST = 'Love Interest',
-  FOIL = 'Foil',
-  SUPPORTING_CHARACTER = 'Supporting Character',
-  MINOR_CHARACTER = 'Minor Character',
+    PROTAGONIST = 'Protagonist',
+    ANTAGONIST = 'Antagonist',
+    DEUTERAGONIST = 'Deuteragonist',
+    MENTOR = 'Mentor',
+    LOVE_INTEREST = 'Love Interest',
+    FOIL = 'Foil',
+    SUPPORTING_CHARACTER = 'Supporting Character',
+    MINOR_CHARACTER = 'Minor Character',
 }
 
 export interface CharacterProfile {
-  history: string;
-  arc: string;
+    history: string;
+    arc: string;
 }
 
 export interface CharacterVisualStats {
@@ -33,16 +33,16 @@ export interface CharacterOutfit {
 }
 
 export interface Character extends CharacterProfile {
-  id: string;
-  name: string;
-  type: CharacterType;
-  initialInfo: string;
-  traits: string;
-  headerImage?: string;
-  // New Visual Fields
-  visualStats?: CharacterVisualStats;
-  outfits?: CharacterOutfit[];
-  activeOutfitId?: string;
+    id: string;
+    name: string;
+    type: CharacterType;
+    initialInfo: string;
+    traits: string;
+    headerImage?: string;
+    // New Visual Fields
+    visualStats?: CharacterVisualStats;
+    outfits?: CharacterOutfit[];
+    activeOutfitId?: string;
 }
 
 export interface StoryboardShot {
@@ -80,10 +80,10 @@ export interface OutlineItem {
 
 export interface RelationshipWebData {
     nodes: { id: string; name: string; type: CharacterType }[];
-    links: { 
-        source: string; 
-        target: string; 
-        dynamic: string; 
+    links: {
+        source: string;
+        target: string;
+        dynamic: string;
         strength: 'Strong' | 'Developing' | 'Weak';
     }[];
 }
@@ -116,10 +116,10 @@ export interface Book {
 export type MaterialType = Tool | 'CHARACTER_PROFILE' | 'ANALYSIS_SUMMARY' | 'VIDEO_ANALYSIS' | 'TIMELINE' | 'RELATIONSHIP_WEB_VISUAL' | 'MAP_DATA' | 'OBJECT_DATA' | 'OUTLINE' | 'IMAGE';
 
 export interface GeneratedContent {
-  title: string;
-  content: string | TimelineItem[] | RelationshipWebData | MapData | StoryObject | OutlineItem[];
-  type: MaterialType;
-  sourceId?: string; // ID of the scene or character this content is derived from
+    title: string;
+    content: string | TimelineItem[] | RelationshipWebData | MapData | StoryObject | OutlineItem[];
+    type: MaterialType;
+    sourceId?: string; // ID of the scene or character this content is derived from
 }
 
 export enum Tool {
@@ -138,25 +138,25 @@ export enum Tool {
 }
 
 export interface SavedMaterial {
-  id: string;
-  type: MaterialType;
-  title: string;
-  content: string | TimelineItem[] | RelationshipWebData | MapData | StoryObject | OutlineItem[];
+    id: string;
+    type: MaterialType;
+    title: string;
+    content: string | TimelineItem[] | RelationshipWebData | MapData | StoryObject | OutlineItem[];
 }
 
 export interface Section {
-  id: string;
-  title: string;
-  column: 1 | 2 | 3 | 'full';
-  isCollapsed: boolean;
-  isVisible: boolean;
+    id: string;
+    title: string;
+    column: 1 | 2 | 3 | 'full';
+    isCollapsed: boolean;
+    isVisible: boolean;
 }
 
 export interface FilterSettings {
-  characters: boolean;
-  scenes: boolean;
-  locations: boolean;
-  materials: boolean;
+    characters: boolean;
+    scenes: boolean;
+    locations: boolean;
+    materials: boolean;
 }
 
 export type ViewMode = 'story' | 'characters' | 'world' | 'timeline' | 'book' | 'visual' | 'comic';
@@ -189,4 +189,13 @@ export interface ComicCharacter {
     description: string;
     image: string; // Base64
     role: 'hero' | 'co-star' | 'villain';
+}
+
+export type GeneratedImageData = {
+    imageUrl: string;
+    source: {
+        type: 'scene' | 'character';
+        id: string;
+    };
+    title: string;
 }
