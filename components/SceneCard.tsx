@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Character, Scene } from '../types';
-import { ChevronDownIcon, ChevronUpIcon, EditIcon, TrashIcon, DownloadIcon, WriteIcon, ImageIcon, LinkIcon, ArrowLeftIcon, ArrowRightIcon, LayoutDashboardIcon, MapIcon, BookOpenIcon, GripVerticalIcon } from './icons';
+import { ChevronDownIcon, ChevronUpIcon, EditIcon, TrashIcon, DownloadIcon, WriteIcon, ImageIcon, LinkIcon, ArrowLeftIcon, ArrowRightIcon, LayoutDashboardIcon, MapIcon, BookOpenIcon, GripVerticalIcon, FilmIcon } from './icons';
 import SceneEditModal from './SceneEditModal';
 
 interface SceneCardProps {

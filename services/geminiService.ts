@@ -1,12 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebData, TimelineItem, OutlineItem, StoryboardShot, Beat, ComicCharacter } from '../types';
 
+console.log("Gemini Service Initializing. API Key present:", !!process.env.API_KEY);
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const TEXT_MODEL_COMPLEX = 'gemini-1.5-pro';
-const TEXT_MODEL_FAST = 'gemini-1.5-flash';
-const IMAGE_MODEL = 'gemini-1.5-flash';
-const COMIC_IMAGE_MODEL = 'gemini-1.5-pro';
+const TEXT_MODEL_COMPLEX = 'gemini-2.0-flash';
+const TEXT_MODEL_FAST = 'gemini-2.0-flash';
+const IMAGE_MODEL = 'gemini-2.0-flash';
+const COMIC_IMAGE_MODEL = 'gemini-2.0-flash';
 
 // Helper to convert File to Base64 for Gemini
 const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: string; mimeType: string } }> => {
@@ -25,7 +26,15 @@ const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: s
 
 // Helper to extract image data from generateContent response
 const extractImageFromContent = (response: any): string => {
-    const parts = response.candidates?.[0]?.content?.parts;
+    // Log response structure for debugging
+    console.log("Image Generation Response:", response);
+
+    const candidates = response.candidates;
+    if (!candidates || candidates.length === 0) {
+        throw new Error("No candidates returned from API.");
+    }
+
+    const parts = candidates[0].content?.parts;
     if (parts) {
         for (const part of parts) {
             if (part.inlineData && part.inlineData.data) {
@@ -33,6 +42,15 @@ const extractImageFromContent = (response: any): string => {
             }
         }
     }
+
+    // If we get here, no image data was found. 
+    // Check if there's text content explaining why (e.g. safety refusal)
+    const textPart = parts?.find((p: any) => p.text);
+    if (textPart) {
+        console.warn("API returned text instead of image:", textPart.text);
+        throw new Error(`API returned text instead of image: ${textPart.text.substring(0, 100)}...`);
+    }
+
     throw new Error("No image data returned from API.");
 };
 
@@ -146,16 +164,42 @@ export async function generateRelationshipWeb(characters: Character[]): Promise<
 }
 
 export async function generatePlotIdeas(premise: string, existingStory: string, characters: Character[]): Promise<string> {
+    console.log("generatePlotIdeas called");
+    console.log("Premise:", premise);
+    console.log("API Key available:", !!process.env.API_KEY);
+
     const prompt = `Brainstorm plot ideas/twists.
     Premise: ${premise}
     Characters: ${characters.map(c => c.name).join(', ')}
     
     List 5 creative plot ideas.`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt
-    });
-    return response.text || '';
+
+    try {
+        const response = await ai.models.generateContent({
+            model: TEXT_MODEL_COMPLEX,
+            contents: prompt
+        });
+        console.log("generatePlotIdeas success", response);
+        return response.text || '';
+    } catch (error: any) {
+        console.error("generatePlotIdeas FAILED:", error);
+        if (error.response) {
+            console.error("Error response:", error.response);
+        }
+        console.error("Error message:", error.message);
+        // Fallback to flash if pro fails?
+        try {
+            console.log("Retrying with Flash model...");
+            const response = await ai.models.generateContent({
+                model: TEXT_MODEL_FAST,
+                contents: prompt
+            });
+            return response.text || '';
+        } catch (retryError) {
+            console.error("Retry failed:", retryError);
+            throw error;
+        }
+    }
 }
 
 export async function generateSceneTransition(scenes: Scene[]): Promise<string> {

@@ -5,10 +5,15 @@ import { initDB } from './db';
 import authRoutes from './auth';
 import storyRoutes from './stories';
 
-dotenv.config();
+dotenv.config({ path: '.env.local' });
+dotenv.config(); // Also load default .env if needed
 
 const app = express();
 const PORT = process.env.PORT || 3005;
+
+console.log("Server starting...");
+console.log("API Key present in server process:", !!process.env.GEMINI_API_KEY);
+console.log("API Key length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Increase limit for large story files

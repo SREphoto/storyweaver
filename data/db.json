@@ -1,4 +1,202 @@
 {
-  "users": [],
-  "stories": []
+  "users": [
+    {
+      "id": "10fc2f8d-7a04-4382-b798-6c1942387393",
+      "username": "Sam",
+      "passwordHash": "$2b$10$02XFRk64.A2hye3GEkYPne/fIqgSE1ZUIBvrCEA4KCMK90QNu/oLG"
+    },
+    {
+      "id": "a0794fea-b5b7-4abd-b1ef-513f1a6a9895",
+      "username": "user_123",
+      "passwordHash": "$2b$10$zGeItvJnKS2mmmfqtBRLzO2zX84A0PYfLp/ARLiaTskyCkziGGY1S"
+    },
+    {
+      "id": "c3498675-ba41-47b3-8352-78922e48d678",
+      "username": "Tim",
+      "passwordHash": "$2b$10$mY8h.GMX.m/yhLRxzdQqIehIAuigpJra4uvIn1xipiNrXuOMlya7W"
+    }
+  ],
+  "stories": [
+    {
+      "id": "2e0da4e3-61e6-451d-95bc-6462e6673d2e",
+      "userId": "a0794fea-b5b7-4abd-b1ef-513f1a6a9895",
+      "title": "THE STORY \n\nTHE SETUP\nThe Grinch is a V-Day icon",
+      "premise": "",
+      "lastUpdated": "2025-12-01T03:41:34.761Z",
+      "data": {
+        "storyPremise": "THE STORY \n\nTHE SETUP\nThe Grinch is a V-Day icon. His cave is now a love-themed workshop. He creates the most extravagant, personalized gifts for Cynthia-Lou and organizes Whoville's annual \"Festival of Hearts,\" a celebration far grander than Christmas. He's almost too invested in the holiday.\n\nThe Grinch, that green grouch, a creature transformed,\nRuled not with malice but truly reformed.\nFor the greatest of seasons, which gave him the Thrall, Fest-of-All-Hearts, surpassed them all!\n\nHis cave, once nasty and filled up with soot,\nWas humming and buzzing with sweet smelling loot. \nA love lumpen lab, filled with whipple and goo,\nWhere he glued all his Kisses and Smoochy-ka-Zoo!\n\nHe planned every party and managed each dance,\nHe spent every dollar on grand, sheer Romance.\nThis yearly “Who Love Day” was bigger by far,\nThan Whobilation upon a bright star!\n\nFor sweet Cynthia Lou, devotion took flight,\nmade gifts that would glitter and glowed in the night,\nLike a 'Whiffle Wand Clock' that told her the time,\nAnd a fountain of Zizzers that chimed in soft rhymes!\n\nHe shrieked at the workers, \"More Snazzle and Pop!\nGet the banners hung higher! Don't ch’ya dare stop!\nThe Romance must flow! It must tumble and flood!\nWe need more pink tinsel and deep velvet stud!\"\n\nHis face was all shiny, his brow was all pinched,\nHis furry green chest his cupid sash cinched.\nHe wore tiny winglets and shoes bright and pink,\nThe Grinch was invested, far more than you think!\n\nHe lived for the Heart and the perfect red bow,\nObsessed that the passion must beautifully flow!\nA Fest-of-All icon, its master, its guide,\nHis need for perfection was bulging inside!\n\n\nTHE CRACKS APPEAR\nCynthia Lou feels suffocated by the Grinch's over-the-top, Grinch style grand gestures. She finds quiet, simple love in her new, regular life with Augustus, who offers a normal Whoville future (a white picket fence and predictable conversation).\nThe Grinch, his poor soul, his heart grew too vast,\nHis gestures were loud and zoomed far too fast!\nHe brought Cynthia Lou towers of Snoom,\nfilled her cottage with noise and gobbly green gloom.\nHe’d blast out his passions with horns and with Zanks,\nHe hugged her too tightly with too many thanks.\n\nShe’d smile a small smile, her heart start to fret,\nShe dreamed of the silence she never could get.\nShe hated the whooplers, the loud 'Hark the Hums!'\nAnd the way that the Grinch kept on tapping his thumbs.\nHis love was a blizzard, a squall and a strain,\nShe longed for the sun and a mild Whoville rain.\n\nThen there was Augustus! Oh, simple and clear,\nWho lived a calm life with no mountain top fear.\nHe offered no Floo-Floomers or gifts seven high,\nJust comfort and manners, beneath a blue sky.\nHe stood in one spot, never dancing or hopping,\nAnd kept his opinions from crashing or dropping.\n\nSpoke of the future, a very neat thought,\nA life of plain goodness, quietly sought\nA house with a fence, painted perfectly white,\nThe sun was predictable, tidy, and bright.\nHe promised no roaring, no sneers, no shouts,\npredictable talk about regular sprouts.\n\nHe asked how her day was, and listened quite long,\nAnd told her the news, without vociferous song.\nHe offered soft silence, a sweet little hum,\nA feeling of peace that had finally come.\n\nAbloof it occurred what her desires were then,\nNo emerald mountains, but regular men.\nThe cracks in her heart grew wide, then broke free,\nShe craved for a family, she never would see\n\nThe Breakup\nThe Grinch prepares his masterpiece: A giant, emerald cut diamond heart carved from Mount Crumpit snow. He goes to deliver it, but finds Cynthia Lou with a letter. She leaves him, not because he’s bad, but because he's too much. She is seen walking away, hand-in-hand with a smirking Augustus Maywho Jr.\n\nGrinch, with a snickery, sweat dripping frown,\nchipped at the peaks of that cold, crumbly town.\nHe worked through the midnight and worked through the noon,\nTo fashion a gift that would make Loubird swoon!\nKazooks, a sparkly, snow frozen  blob,\nThe size of a Who house, or maybe a knob!\nEmerald Cut Crumpits, Diamonds of Ice!\nA love lump of Zuzzer! A present so nice!\n\nHe hitched up poor Max to his Sleigh-Wampus-Do,\nZoomed down to Whoville, all green and brand-new.\nHis heart went ThumpThumpa!  His soul felt So Grand!\nHe carried his future in his left hand!\n\nDown in the street, where bright banners had spun,\nStood Cynthia Lou, bathing in the warm sun.\nShe held in her mitts a small paper of white,\nTears dripped like Sizzle-Drops into the night.\n\nShe sniffled, \"Oh, Grinch, you’re the best, this is true!\nBut your Zoom-Woof-Kerfuffles... they simply won't do!\nYour heart is a Whopper! Your feelings, So Vast!\nYou're simply Too Grinch! too much, and too fast!\"\n\nThe Grinch felt a Wumple right deep in his chest.\nHe stared at his Emerald, truly depressed.\nThe heart of cold Zizzer slipped out of his clasp,\nAnd shattered to slivers all through the grass.\n\nShe turned from the Grinch and his ruins of glee,\nAnd walked right away, from what used to be.\nShe linked arms with someone, a sight most absurd,\nIt was young Augustus, who chirped not a word.\nHe grinned a cruel grin, smugness and pride,\nThat poor souls feelings just crumbled inside.\n\n\nThe Transformation\nThe sight snaps something in the Grinch. The giant, throbbing heart in his chest shrinks three sizes smaller than ever before. His lavish decorations turn dark and sharp. He declares, not to steal Christmas, but to steal the very concept of romantic love from Whoville.\n\nHe watched them below, the small, sniveling Whos,\nWhile sharing their smooches and sweet Giggle-Doos!\nA coupling, a canoodle, a kiss and a cling,\nA sickening sound that made mountaintop ring!\n\nThe sight of such bliss and Smoochy Glee\nSnapped the last wire, quite viciously, see?\nA Sproingle! A Crack! A shift in his mood,\nHe snarled, and he gnashed, a Grinchy-ka-dood.\n\nHis massive red heart, famed to be huge,\nSuddenly shrunk, a frightening deluge!\nSCHPOONK! went SQUELCH! It shrank, dark and tight,\nThree wretched whole sizes, right out of the light!\n\nHis silk woven curtains of shimmering Snoof,\nTurned spiky and sharp, like a terrible proof.\nHis pink, fluffy pillows and garlands of green,\nBecame black, jagged edges and wicked things keen!\n\n\"Hah! Christmas is easy!\" he hissed with a leer,\n\"It comes back next week, and it leaves quite unclear\nA damage substantial! A fleeting small pain!\"\nHe shook his green fists in the cold, whistling rain.\n\n\"But THIS! This soft nonsense! This Gooey-Go-Gay!\nThe smooching! The staring! Moo-Lala-Hooray!\nI shall steal not the presents, the feasts, nor the toys,\nI shall steal all the Romance from the girls and the boys!\n\nI shall grab all the hand holding, sweet, and the true,\nThe lovey dovey things that these silly Whos do!\nAnd leave them with nothing but desolate Blech!\nThe Whos shall be loveless and lonely as heck!\"\n",
+        "characters": [
+          {
+            "id": "char_1764560206780_0",
+            "name": "The Grinch",
+            "type": "Protagonist",
+            "initialInfo": "Green grouch transformed into a Valentine's Day icon. Initially reformed and obsessed with romance, creating extravagant gifts. Becomes embittered and seeks to steal romance after being rejected.",
+            "traits": "Obsessive, extravagant, reformed, perfectionist, bitter, vengeful",
+            "history": "Formerly a Christmas-hating grouch, the Grinch underwent a transformation and embraced the spirit of love, becoming a central figure in Whoville's Valentine's Day celebrations. He poured his energy into creating grand gestures and gifts, particularly for Cynthia-Lou.",
+            "arc": "Starts as a reformed character, embracing love and romance to an extreme degree. He then experiences heartbreak and reverts to a villainous state, seeking to destroy romance itself.",
+            "visualStats": {
+              "height": "",
+              "build": "",
+              "hairColor": "",
+              "eyeColor": "",
+              "distinguishingFeatures": "A tall, slender, fair-skinned woman. She has long blonde braided hair and piercing blue eyes. Her features are sharp and angular, with high cheekbones and a strong jawline. She's wearing tribal armor and carrying a bow and arrow."
+            },
+            "outfits": [
+              {
+                "id": "outfit_1764560301581",
+                "name": "te",
+                "description": "A warrior woman's outfit featuring a silver headpiece with intricate detailing, a silver choker necklace, and a revealing silver bra top with a scalloped design, complemented by dark brown leather straps. Her arms are adorned with matching silver armbands, and she wears a brown leather skirt with fur accents, held up by a wide brown leather belt. She is holding a large silver sword."
+              }
+            ],
+            "activeOutfitId": "outfit_1764560301581"
+          },
+          {
+            "id": "char_1764560206780_1",
+            "name": "Cynthia-Lou",
+            "type": "Love Interest",
+            "initialInfo": "Recipient of the Grinch's affections and grand gestures. Eventually seeks a simpler, quieter life.",
+            "traits": "Appreciative initially, overwhelmed, longing for simplicity, decisive",
+            "history": "Was courted by the Grinch and enjoyed his initial displays of affection, but grew weary of his overwhelming gestures and sought a more conventional relationship.",
+            "arc": "Begins by enjoying the Grinch's affections, but gradually becomes overwhelmed and chooses a simpler life, leading to her leaving the Grinch."
+          },
+          {
+            "id": "char_1764560206780_2",
+            "name": "Augustus Maywho Jr.",
+            "type": "Antagonist",
+            "initialInfo": "Represents a simple, predictable, and conventional alternative to the Grinch. Smug and opportunistic.",
+            "traits": "Simple, predictable, comforting, smug, opportunistic",
+            "history": "Presented as a contrast to the Grinch's extravagance, offering Cynthia-Lou a normal Whoville life with simple pleasures.",
+            "arc": "Serves as a catalyst for the Grinch's downfall by offering an alternative relationship to Cynthia-Lou. He is the beneficiary of the breakup, and his smugness highlights the Grinch's pain."
+          },
+          {
+            "id": "char_1764560206780_3",
+            "name": "Max",
+            "type": "Supporting Character",
+            "initialInfo": "The Grinch's loyal dog, used to help with his schemes and grand gestures.",
+            "traits": "Loyal, hardworking",
+            "history": "Used by the Grinch to pull his Sleigh-Wampus-Do.",
+            "arc": "No significant arc."
+          }
+        ],
+        "scenes": [
+          {
+            "id": "scene_1764560206780_0",
+            "title": "The Grinch's Love-Themed Workshop",
+            "summary": "The Grinch's cave is transformed into a bustling workshop, filled with sweet-smelling loot and elaborate creations for Valentine's Day.",
+            "fullText": "His cave, once nasty and filled up with soot,\nWas humming and buzzing with sweet smelling loot. \nA love lumpen lab, filled with whipple and goo,\nWhere he glued all his Kisses and Smoochy-ka-Zoo!\n\nHe planned every party and managed each dance,\nHe spent every dollar on grand, sheer Romance.\nThis yearly “Who Love Day” was bigger by far,\nThan Whobilation upon a bright star!",
+            "characterIds": [
+              "char_1764560206780_0"
+            ],
+            "isTransition": false
+          },
+          {
+            "id": "scene_1764560206780_1",
+            "title": "Preparing Extravagant Gifts",
+            "summary": "The Grinch creates elaborate, personalized gifts for Cynthia-Lou, showcasing his devotion and excessive investment in the holiday.",
+            "fullText": "For sweet Cynthia Lou, devotion took flight,\nmade gifts that would glitter and glowed in the night,\nLike a 'Whiffle Wand Clock' that told her the time,\nAnd a fountain of Zizzers that chimed in soft rhymes!\n\nHe shrieked at the workers, \"More Snazzle and Pop!\nGet the banners hung higher! Don't ch’ya dare stop!\nThe Romance must flow! It must tumble and flood!\nWe need more pink tinsel and deep velvet stud!\"\n\nHis face was all shiny, his brow was all pinched,\nHis furry green chest his cupid sash cinched.\nHe wore tiny winglets and shoes bright and pink,\nThe Grinch was invested, far more than you think!\n\nHe lived for the Heart and the perfect red bow,\nObsessed that the passion must beautifully flow!\nA Fest-of-All icon, its master, its guide,\nHis need for perfection was bulging inside!",
+            "characterIds": [
+              "char_1764560206780_0"
+            ],
+            "isTransition": false
+          },
+          {
+            "id": "scene_1764560206780_2",
+            "title": "Cynthia-Lou's Suffocation",
+            "summary": "Cynthia-Lou feels overwhelmed by the Grinch's grand gestures and longs for a simpler, quieter life with Augustus.",
+            "fullText": "The Grinch, his poor soul, his heart grew too vast,\nHis gestures were loud and zoomed far too fast!\nHe brought Cynthia Lou towers of Snoom,\nfilled her cottage with noise and gobbly green gloom.\nHe’d blast out his passions with horns and with Zanks,\nHe hugged her too tightly with too many thanks.\n\nShe’d smile a small smile, her heart start to fret,\nShe dreamed of the silence she never could get.\nShe hated the whooplers, the loud 'Hark the Hums!'\nAnd the way that the Grinch kept on tapping his thumbs.\nHis love was a blizzard, a squall and a strain,\nShe longed for the sun and a mild Whoville rain.",
+            "characterIds": [
+              "char_1764560206780_0",
+              "char_1764560206780_1"
+            ],
+            "isTransition": false
+          },
+          {
+            "id": "scene_1764560206780_3",
+            "title": "Augustus' Simple Offer",
+            "summary": "Augustus offers Cynthia-Lou a calm and predictable life, contrasting with the Grinch's extravagance.",
+            "fullText": "Then there was Augustus! Oh, simple and clear,\nWho lived a calm life with no mountain top fear.\nHe offered no Floo-Floomers or gifts seven high,\nJust comfort and manners, beneath a blue sky.\nHe stood in one spot, never dancing or hopping,\nAnd kept his opinions from crashing or dropping.\n\nSpoke of the future, a very neat thought,\nA life of plain goodness, quietly sought\nA house with a fence, painted perfectly white,\nThe sun was predictable, tidy, and bright.\nHe promised no roaring, no sneers, no shouts,\npredictable talk about regular sprouts.\n\nHe asked how her day was, and listened quite long,\nAnd told her the news, without vociferous song.\nHe offered soft silence, a sweet little hum,\nA feeling of peace that had finally come.\n\nAbloof it occurred what her desires were then,\nNo emerald mountains, but regular men.\nThe cracks in her heart grew wide, then broke free,\nShe craved for a family, she never would see",
+            "characterIds": [
+              "char_1764560206780_2",
+              "char_1764560206780_1"
+            ],
+            "isTransition": false
+          },
+          {
+            "id": "scene_1764560206780_4",
+            "title": "The Breakup",
+            "summary": "The Grinch presents his ultimate gift, only to be rejected by Cynthia-Lou, who leaves him for Augustus.",
+            "fullText": "Grinch, with a snickery, sweat dripping frown,\nchipped at the peaks of that cold, crumbly town.\nHe worked through the midnight and worked through the noon,\nTo fashion a gift that would make Loubird swoon!\nKazooks, a sparkly, snow frozen  blob,\nThe size of a Who house, or maybe a knob!\nEmerald Cut Crumpits, Diamonds of Ice!\nA love lump of Zuzzer! A present so nice!\n\nHe hitched up poor Max to his Sleigh-Wampus-Do,\nZoomed down to Whoville, all green and brand-new.\nHis heart went ThumpThumpa!  His soul felt So Grand!\nHe carried his future in his left hand!\n\nDown in the street, where bright banners had spun,\nStood Cynthia Lou, bathing in the warm sun.\nShe held in her mitts a small paper of white,\nTears dripped like Sizzle-Drops into the night.\n\nShe sniffled, \"Oh, Grinch, you’re the best, this is true!\nBut your Zoom-Woof-Kerfuffles... they simply won't do!\nYour heart is a Whopper! Your feelings, So Vast!\nYou're simply Too Grinch! too much, and too fast!\"\n\nThe Grinch felt a Wumple right deep in his chest.\nHe stared at his Emerald, truly depressed.\nThe heart of cold Zizzer slipped out of his clasp,\nAnd shattered to slivers all through the grass.\n\nShe turned from the Grinch and his ruins of glee,\nAnd walked right away, from what used to be.\nShe linked arms with someone, a sight most absurd,\nIt was young Augustus, who chirped not a word.\nHe grinned a cruel grin, smugness and pride,\nThat poor souls feelings just crumbled inside.",
+            "characterIds": [
+              "char_1764560206780_0",
+              "char_1764560206780_1",
+              "char_1764560206780_2",
+              "char_1764560206780_3"
+            ],
+            "isTransition": false
+          },
+          {
+            "id": "scene_1764560206780_5",
+            "title": "The Grinch's Transformation (Reversal)",
+            "summary": "The rejection snaps something in the Grinch, causing his heart to shrink and his decorations to turn dark. He vows to steal romance from Whoville.",
+            "fullText": "He watched them below, the small, sniveling Whos,\nWhile sharing their smooches and sweet Giggle-Doos!\nA coupling, a canoodle, a kiss and a cling,\nA sickening sound that made mountaintop ring!\n\nThe sight of such bliss and Smoochy Glee\nSnapped the last wire, quite viciously, see?\nA Sproingle! A Crack! A shift in his mood,\nHe snarled, and he gnashed, a Grinchy-ka-dood.\n\nHis massive red heart, famed to be huge,\nSuddenly shrunk, a frightening deluge!\nSCHPOONK! went SQUELCH! It shrank, dark and tight,\nThree wretched whole sizes, right out of the light!\n\nHis silk woven curtains of shimmering Snoof,\nTurned spiky and sharp, like a terrible proof.\nHis pink, fluffy pillows and garlands of green,\nBecame black, jagged edges and wicked things keen!\n\n\"Hah! Christmas is easy!\" he hissed with a leer,\n\"It comes back next week, and it leaves quite unclear\nA damage substantial! A fleeting small pain!\"\nHe shook his green fists in the cold, whistling rain.\n\n\"But THIS! This soft nonsense! This Gooey-Go-Gay!\nThe smooching! The staring! Moo-Lala-Hooray!\nI shall steal not the presents, the feasts, nor the toys,\nI shall steal all the Romance from the girls and the boys!\n\nI shall grab all the hand holding, sweet, and the true,\nThe lovey dovey things that these silly Whos do!\nAnd leave them with nothing but desolate Blech!\nThe Whos shall be loveless and lonely as heck!\"",
+            "characterIds": [
+              "char_1764560206780_0"
+            ],
+            "isTransition": false
+          }
+        ],
+        "savedMaterials": [
+          {
+            "id": "material_1764560206780",
+            "type": "ANALYSIS_SUMMARY",
+            "title": "Analysis Complete",
+            "content": "Identified 4 characters and 6 scenes. Characters have been automatically linked to scenes where they appear."
+          }
+        ],
+        "mapData": null
+      }
+    },
+    {
+      "id": "6e37720a-1937-4513-880b-794bc698e079",
+      "userId": "a0794fea-b5b7-4abd-b1ef-513f1a6a9895",
+      "title": "Untitled Story",
+      "premise": "",
+      "lastUpdated": "2025-12-01T00:32:03.115Z",
+      "data": {
+        "storyPremise": "",
+        "characters": [],
+        "scenes": [],
+        "savedMaterials": [],
+        "mapData": null
+      }
+    },
+    {
+      "id": "4fab3128-4204-40eb-870e-be3f0ac54131",
+      "userId": "a0794fea-b5b7-4abd-b1ef-513f1a6a9895",
+      "title": "Untitled Story",
+      "premise": "",
+      "lastUpdated": "2025-12-01T00:39:24.930Z",
+      "data": {
+        "storyPremise": "",
+        "characters": [],
+        "scenes": [],
+        "savedMaterials": [],
+        "mapData": null
+      }
+    },
+    {
+      "id": "650e3136-03dc-4291-84f0-9fb06cd416a1",
+      "userId": "c3498675-ba41-47b3-8352-78922e48d678",
+      "title": "In a future where humanity has colonized Mars, a lone scientist discovers an ancient alien artifact that threatens to unravel the fabric of reality",
+      "premise": "",
+      "lastUpdated": "2025-12-01T00:45:17.305Z",
+      "data": {
+        "storyPremise": "In a future where humanity has colonized Mars, a lone scientist discovers an ancient alien artifact that threatens to unravel the fabric of reality.",
+        "characters": [],
+        "scenes": [],
+        "savedMaterials": [],
+        "mapData": null
+      }
+    }
+  ]
 }

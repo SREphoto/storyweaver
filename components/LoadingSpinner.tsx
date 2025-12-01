@@ -7,7 +7,7 @@ const LoadingSpinner: React.FC = () => {
       className="animate-spin h-8 w-8 text-brand-secondary"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
-      viewBox="0 0 24"
+      viewBox="0 0 24 24"
     >
       <circle
         className="opacity-25"

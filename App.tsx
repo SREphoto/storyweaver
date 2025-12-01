@@ -13,6 +13,7 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 };
 
 function App() {
+    console.log("App component rendering");
     return (
         <AuthProvider>
             <Router>

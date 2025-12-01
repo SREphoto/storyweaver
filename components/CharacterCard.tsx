@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Character, CharacterType } from '../types';
-import { ChevronDownIcon, ChevronUpIcon, TrashIcon, CrownIcon, SkullIcon, UsersIcon, DramaIcon, EditIcon, SaveIcon, HeartIcon, GraduationCapIcon, UserIcon, InfoIcon, CheckCircleIcon, DownloadIcon, ImageIcon, PaletteIcon } from './icons';
+import { ChevronDownIcon, ChevronUpIcon, TrashIcon, CrownIcon, SkullIcon, UsersIcon, DramaIcon, EditIcon, SaveIcon, HeartIcon, GraduationCapIcon, UserIcon, InfoIcon, CheckCircleIcon, DownloadIcon, ImageIcon, PaletteIcon, LayoutDashboardIcon } from './icons';
 import { characterTypeDescriptions } from './characterTypeDescriptions';
 import CollapsibleSubSection from './CollapsibleSubSection';
 import ArcVisualizer from './ArcVisualizer';
@@ -15,7 +15,6 @@ interface CharacterCardProps {
     onDelete: () => void;
     onUpdate: (characterId: string, updates: Partial<Character>) => void;
     onExport: (characterId: string) => void;
-    onGenerateImage: (character: Character) => void;
     onGenerateImage: (character: Character) => void;
     onOpenVisuals?: (character: Character) => void;
     onOpenSplitView?: () => void;
