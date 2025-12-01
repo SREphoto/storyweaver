@@ -6,17 +6,25 @@ import LoadingSpinner from './LoadingSpinner';
 
 interface StoryboardModalProps {
     scene: Scene;
-    onGenerateStoryboard: () => void;
+    onGenerateStoryboard: (options: { stylize: number, aspectRatio: string, version: string }) => void;
     onGenerateSketch: (shotId: string, description: string) => void;
     onUpdateShot: (shotId: string, updates: Partial<StoryboardShot>) => void;
     onClose: () => void;
     isGenerating: boolean;
 }
 
+const STYLIZE_OPTIONS = Array.from({ length: 21 }, (_, i) => i * 50);
+const ASPECT_RATIOS = ['1:2', '9:16', '2:3', '3:4', '5:6', '1:1', '6:5', '4:3', '3:2', '16:9', '2:1'];
+const VERSIONS = ['5', '6', '6.1', '7'];
+
 const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStoryboard, onGenerateSketch, onUpdateShot, onClose, isGenerating }) => {
     const [copySuccessId, setCopySuccessId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploadTargetShotId, setUploadTargetShotId] = useState<string | null>(null);
+
+    const [stylize, setStylize] = useState(100);
+    const [aspectRatio, setAspectRatio] = useState('16:9');
+    const [version, setVersion] = useState('6');
 
     const handleCopyPrompt = (prompt: string, id: string) => {
         navigator.clipboard.writeText(prompt);
@@ -63,8 +71,34 @@ const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStor
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button 
-                            onClick={onGenerateStoryboard}
+                        <div className="flex gap-2 mr-2">
+                            <select
+                                value={version}
+                                onChange={(e) => setVersion(e.target.value)}
+                                className="bg-black/20 border border-white/10 rounded px-2 py-1 text-xs text-brand-text focus:outline-none focus:border-brand-secondary"
+                                title="Midjourney Version"
+                            >
+                                {VERSIONS.map(v => <option key={v} value={v}>v{v}</option>)}
+                            </select>
+                            <select
+                                value={aspectRatio}
+                                onChange={(e) => setAspectRatio(e.target.value)}
+                                className="bg-black/20 border border-white/10 rounded px-2 py-1 text-xs text-brand-text focus:outline-none focus:border-brand-secondary"
+                                title="Aspect Ratio"
+                            >
+                                {ASPECT_RATIOS.map(ar => <option key={ar} value={ar}>{ar}</option>)}
+                            </select>
+                            <select
+                                value={stylize}
+                                onChange={(e) => setStylize(Number(e.target.value))}
+                                className="bg-black/20 border border-white/10 rounded px-2 py-1 text-xs text-brand-text focus:outline-none focus:border-brand-secondary"
+                                title="Stylize"
+                            >
+                                {STYLIZE_OPTIONS.map(s => <option key={s} value={s}>s{s}</option>)}
+                            </select>
+                        </div>
+                        <button
+                            onClick={() => onGenerateStoryboard({ stylize, aspectRatio, version })}
                             disabled={isGenerating}
                             className="flex items-center gap-2 bg-brand-secondary text-white font-bold py-2 px-6 rounded-xl hover:bg-opacity-90 transition shadow-lg shadow-brand-secondary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -104,7 +138,7 @@ const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStor
                                         ) : (
                                             <div className="text-center p-4">
                                                 <p className="text-xs text-brand-text-muted mb-2 italic">"{shot.visualDescription}"</p>
-                                                <button 
+                                                <button
                                                     onClick={() => onGenerateSketch(shot.id, shot.visualDescription)}
                                                     className="text-xs bg-brand-primary/50 hover:bg-brand-secondary text-white px-3 py-1.5 rounded-full transition"
                                                 >
@@ -115,7 +149,7 @@ const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStor
 
                                         {/* Overlay Actions */}
                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                            <button 
+                                            <button
                                                 onClick={() => triggerUpload(shot.id)}
                                                 className="p-2 bg-white/10 hover:bg-brand-secondary rounded-full text-white transition"
                                                 title="Upload Midjourney Image"
@@ -123,7 +157,7 @@ const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStor
                                                 <ImageIcon className="w-5 h-5" />
                                             </button>
                                             {!shot.sketchImage && !shot.finalImage && (
-                                                <button 
+                                                <button
                                                     onClick={() => onGenerateSketch(shot.id, shot.visualDescription)}
                                                     className="p-2 bg-white/10 hover:bg-brand-secondary rounded-full text-white transition"
                                                     title="Generate Pencil Sketch"
@@ -138,7 +172,7 @@ const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStor
                                     <div className="p-4 flex-grow flex flex-col gap-2 bg-brand-bg/30">
                                         <div className="flex justify-between items-center">
                                             <span className="text-[10px] font-bold uppercase tracking-wider text-brand-text-muted">Midjourney Prompt</span>
-                                            <button 
+                                            <button
                                                 onClick={() => handleCopyPrompt(shot.midjourneyPrompt, shot.id)}
                                                 className={`text-xs flex items-center gap-1 ${copySuccessId === shot.id ? 'text-green-400' : 'text-brand-text-muted hover:text-white'}`}
                                             >
@@ -154,14 +188,14 @@ const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStor
                         </div>
                     )}
                 </div>
-                
+
                 {/* Hidden Input for Upload */}
-                <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept="image/*" 
-                    onChange={handleImageUpload} 
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
                 />
             </div>
         </div>

@@ -90,6 +90,12 @@ const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onToggleSelect
                                 </div>
                             )}
 
+                            {onOpenStoryboard && (
+                                <button onClick={() => onOpenStoryboard(scene)} title="Open Storyboard" className="text-brand-text-muted hover:text-purple-400 transition p-1 rounded hover:bg-purple-900/20">
+                                    <FilmIcon className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+
                             <button onClick={handleEditToggle} title='Edit Details' className="text-brand-text-muted hover:text-white transition p-1 rounded hover:bg-brand-primary/50">
                                 <EditIcon className="w-3.5 h-3.5" />
                             </button>
@@ -152,11 +158,6 @@ const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onToggleSelect
                                 <button onClick={() => onExport(scene.id)} title="Export" className="text-brand-text-muted hover:text-white transition p-1 rounded hover:bg-brand-primary/50">
                                     <DownloadIcon className="w-3.5 h-3.5" />
                                 </button>
-                                {onOpenStoryboard && (
-                                    <button onClick={() => onOpenStoryboard(scene)} className="p-1.5 text-purple-400 hover:text-purple-300 transition hover:bg-purple-900/20 rounded-lg" title="Open Storyboard">
-                                        <FilmIcon className="w-4 h-4" />
-                                    </button>
-                                )}
                                 {onOpenSplitView && (
                                     <button onClick={onOpenSplitView} className="p-1.5 text-brand-secondary hover:text-white transition hover:bg-brand-secondary/20 rounded-lg" title="Open in Split View">
                                         <LayoutDashboardIcon className="w-4 h-4" />

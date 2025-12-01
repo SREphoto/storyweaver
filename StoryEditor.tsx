@@ -264,7 +264,7 @@ function StoryEditor() {
 
 
     // ... (Storyboard Logic remains same)
-    const handleGenerateStoryboard = async (sceneId: string) => {
+    const handleGenerateStoryboard = async (sceneId: string, options?: { stylize: number, aspectRatio: string, version: string }) => {
         const scene = scenes.find(s => s.id === sceneId);
         if (!scene) return;
 
@@ -290,7 +290,7 @@ function StoryEditor() {
 
             // 3. Generate Shots
             setLoadingMessage('Visualizing shots...');
-            const shots = await geminiService.generateStoryboardAnalysis(updatedScene, charactersInScene);
+            const shots = await geminiService.generateStoryboardAnalysis(updatedScene, charactersInScene, options);
             updatedScene.storyboard = shots;
 
             // Update Scene in State

@@ -4,10 +4,10 @@ import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebD
 console.log("Gemini Service Initializing. API Key present:", !!process.env.API_KEY);
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const TEXT_MODEL_COMPLEX = 'gemini-2.0-flash';
-const TEXT_MODEL_FAST = 'gemini-2.0-flash';
-const IMAGE_MODEL = 'gemini-2.0-flash';
-const COMIC_IMAGE_MODEL = 'gemini-2.0-flash';
+const TEXT_MODEL_COMPLEX = 'gemini-2.0-flash-exp';
+const TEXT_MODEL_FAST = 'gemini-2.0-flash-exp';
+const IMAGE_MODEL = 'gemini-2.0-flash-exp';
+const COMIC_IMAGE_MODEL = 'gemini-2.0-flash-exp';
 
 // Helper to convert File to Base64 for Gemini
 const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: string; mimeType: string } }> => {
@@ -428,12 +428,16 @@ export async function generateScript(scene: Scene, characters: Character[]): Pro
     return response.text || '';
 }
 
-export async function generateStoryboardAnalysis(scene: Scene, characters: Character[]): Promise<StoryboardShot[]> {
+export async function generateStoryboardAnalysis(scene: Scene, characters: Character[], options?: { stylize?: number, aspectRatio?: string, version?: string }): Promise<StoryboardShot[]> {
+    const { stylize = 100, aspectRatio = '16:9', version = '6' } = options || {};
+
     const prompt = `Create a storyboard shot list for "${scene.title}".
     Script/Summary: ${scene.script || scene.summary}
     
     Return JSON array of objects: 
-    { "id": "shot_1", "shotType": "Wide/Close-up/etc", "visualDescription": "...", "midjourneyPrompt": "..." }`;
+    { "id": "shot_1", "shotType": "Wide/Close-up/etc", "visualDescription": "...", "midjourneyPrompt": "..." }
+    
+    IMPORTANT: For the "midjourneyPrompt" field, ensure you append the following parameters to the end of the prompt string: --stylize ${stylize} --ar ${aspectRatio} --v ${version}`;
 
     const response = await ai.models.generateContent({
         model: TEXT_MODEL_FAST,
