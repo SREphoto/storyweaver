@@ -59,6 +59,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Navigation */}
                 <nav className="flex-grow px-3 space-y-2 mt-4">
+                    <a href="/" className="w-full flex items-center gap-3 p-3 rounded-xl text-brand-text-muted hover:text-brand-text hover:bg-white/5 transition-all duration-200">
+                        <ChevronLeftIcon className="w-5 h-5" />
+                        <span className="hidden lg:block font-medium text-sm">Back to Dashboard</span>
+                    </a>
+                    <div className="h-px bg-white/10 my-2 mx-2" />
                     <button onClick={() => setActiveView('story')} title="Story Context" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'story' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
                         <BookOpenIcon className="w-5 h-5" />
                         <span className="hidden lg:block font-medium text-sm">Story Context</span>

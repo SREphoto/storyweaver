@@ -48,6 +48,7 @@ interface StoryContextType {
     reorderScenes: (scenes: Scene[]) => void;
     updateLocation: (id: string, updates: Partial<Location>) => void;
     deleteSavedMaterial: (id: string) => void;
+    resetStory: () => void;
 }
 
 const StoryContext = createContext<StoryContextType | undefined>(undefined);
@@ -323,7 +324,18 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             saveProject, loadProject, saveStatus,
             updateCharacter, createCharacter, deleteCharacter,
             addScene, updateScene, deleteScene, reorderScenes,
-            updateLocation, deleteSavedMaterial
+            updateLocation, deleteSavedMaterial,
+            resetStory: () => {
+                setStoryPremise('');
+                setStoryTextToAnalyze('');
+                setCharacters([]);
+                setScenes([]);
+                setMapData(null);
+                setSavedMaterials([]);
+                setCompiledBook(null);
+                setGeneratedContent(null);
+                setError(null);
+            }
         }}>
             {children}
         </StoryContext.Provider>
