@@ -7,11 +7,11 @@ export default defineConfig(({ mode }) => {
   console.log("Vite Config - GEMINI_API_KEY present:", !!env.GEMINI_API_KEY);
   return {
     server: {
-      port: 3000,
+      port: 3002,
       host: '0.0.0.0',
       proxy: {
         '/api': {
-          target: 'http://localhost:3005',
+          target: 'http://localhost:3003',
           changeOrigin: true,
           secure: false,
         }

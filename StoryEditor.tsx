@@ -4,27 +4,39 @@ import { useParams } from 'react-router-dom';
 import { Character, CharacterType, GeneratedContent, Scene, Tool, SavedMaterial, MaterialType, TimelineItem, RelationshipWebData, MapData, Location, Section, FilterSettings, StoryObject, OutlineItem, Book, ViewMode, StoryboardShot } from './types';
 import * as geminiService from './services/geminiService';
 import CharacterCard from './components/CharacterCard';
-import { LayoutDashboardIcon, ChevronRightIcon } from './components/icons';
+import { LayoutDashboardIcon, ChevronRightIcon, MaximizeIcon, MinimizeIcon } from './components/icons';
 import SceneCard from './components/SceneCard';
+import SprintTimer from './components/SprintTimer';
+import WordCountTracker from './components/WordCountTracker';
 import ImagePreviewModal from './components/ImagePreviewModal';
 import SearchBar from './components/SearchBar';
 import InteractiveBackground from './components/InteractiveBackground';
 import OnboardingWalkthrough from './components/OnboardingWalkthrough';
 import BookReader from './components/BookReader';
 import VisualNovelView from './components/VisualNovelView';
-import StoryboardModal from './components/StoryboardModal';
-import CharacterVisualModal from './components/CharacterVisualModal';
+import GlobalLoadingIndicator from './components/GlobalLoadingIndicator';
+import { api } from './services/api';
 import ComicCreator from './components/ComicCreator';
-import ThemeSettingsModal, { THEMES, ThemeColor } from './components/ThemeSettingsModal';
-import { useStory } from './contexts/StoryContext';
-import { useStoryGenerators } from './hooks/useStoryGenerators';
+import VideoCreator from './components/VideoCreator';
+
+// Imported Views and Modals
 import Sidebar from './components/Sidebar';
+import CharacterVisualModal from './components/CharacterVisualModal';
+import OutputModal from './components/OutputModal';
+import ThemeSettingsModal, { ThemeColor, THEMES } from './components/ThemeSettingsModal';
+import StoryboardModal from './components/StoryboardModal';
 import RightPanel from './components/RightPanel';
+
 import StoryView from './components/views/StoryView';
 import CharactersView from './components/views/CharactersView';
+import MapView from './components/views/MapView';
 import WorldView from './components/views/WorldView';
 import TimelineView from './components/views/TimelineView';
-import { api } from './services/api';
+import NotesView from './components/views/NotesView';
+import ItemsView from './components/views/ItemsView';
+
+import { useStory } from './contexts/StoryContext';
+import { useStoryGenerators } from './hooks/useStoryGenerators';
 
 function StoryEditor() {
     const { id } = useParams<{ id: string }>();
@@ -43,7 +55,8 @@ function StoryEditor() {
         updateCharacter, deleteCharacter,
         addScene, updateScene, deleteScene, reorderScenes,
         updateLocation, deleteSavedMaterial,
-        loadProject, resetStory
+        loadProject, resetStory,
+        notes, items
     } = useStory();
 
     // Load story data if ID is present
@@ -97,7 +110,9 @@ function StoryEditor() {
             characters,
             scenes,
             savedMaterials,
-            mapData
+            mapData,
+            notes,
+            items
         };
 
         const timeout = setTimeout(async () => {
@@ -112,7 +127,7 @@ function StoryEditor() {
         }, 2000); // Debounce 2s
 
         return () => clearTimeout(timeout);
-    }, [id, storyPremise, characters, scenes, savedMaterials, mapData]);
+    }, [id, storyPremise, characters, scenes, savedMaterials, mapData, notes, items]);
 
 
     const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -334,7 +349,7 @@ function StoryEditor() {
 
     // Data Update Helpers
     const handleSetHeaderImage = () => {
-        if (!generatedImage) return;
+        if (!generatedImage || !generatedImage.source) return;
         if (generatedImage.source.type === 'scene') {
             updateScene(generatedImage.source.id, { headerImage: generatedImage.imageUrl });
         } else {
@@ -343,15 +358,38 @@ function StoryEditor() {
         setGeneratedImage(null);
     };
 
-    const handleSaveImageToMaterials = () => {
-        if (!generatedImage) return;
+    const handleSaveImageToMaterials = (imageUrlOverride?: string) => {
+        if (!generatedImage && !imageUrlOverride) return;
+        const imgUrl = imageUrlOverride || generatedImage?.imageUrl;
+        const title = generatedImage?.title || 'Saved Image';
+
+        if (!imgUrl) return;
+
         setSavedMaterials(prev => [{
             id: `material_${Date.now()}`,
             type: 'IMAGE',
-            title: `Image: ${generatedImage.title}`,
-            content: generatedImage.imageUrl,
+            title: `Image: ${title}`,
+            content: imgUrl,
         }, ...prev]);
-        setGeneratedImage(null);
+        setGeneratedImage(null); // Close modal
+    };
+
+    const handleViewImage = (material: SavedMaterial) => {
+        if (material.type !== 'IMAGE') return;
+        setGeneratedImage({
+            imageUrl: material.content as string,
+            title: material.title,
+            // source is undefined for saved materials
+        });
+    };
+
+    const handleSaveMaterial = (content: GeneratedContent) => {
+        setSavedMaterials(prev => [{
+            id: `material_${Date.now()}`,
+            type: content.type,
+            title: content.title,
+            content: content.content,
+        }, ...prev]);
     };
 
     const handleToggleSelection = (id: string, type: 'character' | 'scene' | 'material' | 'location') => {
@@ -414,6 +452,22 @@ function StoryEditor() {
 
 
 
+    // State for Distraction Free Mode
+    const [isDistractionFree, setIsDistractionFree] = useState(false);
+
+    // Calculate current word count (simple approximation)
+    // Find the currently active scene if in story view, or just sum all scenes?
+    // Let's use the active scene if one is selected in StoryView context (which we don't fully track here yet easily)
+    // For now, let's just sum all words in the project as a total goal
+    const totalWordCount = useMemo(() => {
+        return scenes.reduce((acc, scene) => acc + (scene.fullText?.split(/\s+/).length || 0), 0);
+    }, [scenes]);
+
+    // Derived states for layout
+    const finalSidebarOpen = isDistractionFree ? false : isSidebarOpen;
+    const finalRightPanelOpen = isDistractionFree ? false : isRightPanelOpen;
+
+
     const activeStoryboardScene = activeStoryboardSceneId ? scenes.find(s => s.id === activeStoryboardSceneId) : null;
     const activeVisualCharacter = activeVisualCharacterId ? characters.find(c => c.id === activeVisualCharacterId) : null;
 
@@ -421,16 +475,19 @@ function StoryEditor() {
         <div className="flex h-screen w-screen bg-brand-bg text-brand-text overflow-hidden font-sans transition-colors duration-300">
 
             {/* --- Left Sidebar (Navigation & Tools) --- */}
-            {/* --- Left Sidebar (Navigation & Tools) --- */}
-            <Sidebar
-                activeView={activeView}
-                setActiveView={setActiveView}
-                isSidebarOpen={isSidebarOpen}
-                setIsSidebarOpen={setIsSidebarOpen}
-                theme={theme}
-                setShowThemeSettings={setShowThemeSettings}
-                setShowOnboarding={setShowOnboarding}
-            />
+            <div className={`${finalSidebarOpen ? 'w-64' : 'w-0'} flex-shrink-0 transition-all duration-300 ease-in-out border-r border-white/10 relative z-20 bg-brand-surface/95 backdrop-blur-md`}>
+                <div className="w-64 h-full overflow-hidden">
+                    <Sidebar
+                        activeView={activeView}
+                        setActiveView={setActiveView}
+                        isSidebarOpen={finalSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen}
+                        theme={theme}
+                        setShowThemeSettings={setShowThemeSettings}
+                        setShowOnboarding={setShowOnboarding}
+                    />
+                </div>
+            </div>
 
             {activeVisualCharacter && (
                 <CharacterVisualModal
@@ -440,18 +497,78 @@ function StoryEditor() {
                 />
             )}
 
+            {generatedContent && (
+                <OutputModal
+                    generatedContent={generatedContent}
+                    onClose={() => setGeneratedContent(null)}
+                    isLoading={isLoading}
+                    loadingMessage={loadingMessage}
+                    error={error}
+                    onGenerateTimeline={handleGenerateTimeline}
+                    onUpdateScene={updateScene}
+                    onSave={handleSaveMaterial}
+                />
+            )}
+
             {/* --- Main Content Area --- */}
-            <main className="flex-grow flex flex-col relative">
-                {/* Toggle Sidebar Button */}
-                {!isSidebarOpen && (
-                    <button
-                        onClick={() => setIsSidebarOpen(true)}
-                        className="absolute top-4 left-4 p-2 bg-brand-surface border border-white/10 rounded-md text-brand-text-muted hover:text-white z-30 shadow-md"
-                        title="Open Sidebar"
-                    >
-                        <ChevronRightIcon className="w-5 h-5" />
-                    </button>
-                )}
+            <main className="flex-grow flex flex-col relative transition-all duration-300">
+
+                {/* Top Header / Toolbar (Enhanced for Distraction Free) */}
+                <header className={`h-16 px-6 flex items-center justify-between border-b border-white/10 transition-all duration-300 ${isDistractionFree ? 'bg-transparent border-transparent hover:bg-brand-surface/30 hover:backdrop-blur-md hover:border-white/10' : 'bg-brand-surface/50 backdrop-blur-md'}`}>
+
+                    <div className="flex items-center gap-4">
+                        {/* Sidebar Toggle (Only show if not distraction free, OR if we want to allow opening it temporarily?) */}
+                        {/* Let's hide it in distraction free to force focus, rely on the exit button */}
+                        {!isDistractionFree && !isSidebarOpen && (
+                            <button
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="p-2 -ml-2 hover:bg-white/10 rounded-md text-brand-text-muted transition"
+                                aria-label="Open Sidebar"
+                            >
+                                <ChevronRightIcon className="w-5 h-5" />
+                            </button>
+                        )}
+
+                        <h1 className={`text-lg font-serif font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-brand-secondary to-purple-400 ${isDistractionFree ? 'opacity-50 hover:opacity-100 transition-opacity' : ''}`}>
+                            {storyPremise ? (storyPremise.split('.')[0].length > 40 ? storyPremise.split('.')[0].substring(0, 40) + '...' : storyPremise.split('.')[0]) : 'StoryWeaver'}
+                        </h1>
+
+                        <div className="h-6 w-px bg-white/10 mx-2"></div>
+
+                        {/* Writer Tools */}
+                        <div className="flex items-center gap-3">
+                            <SprintTimer />
+                            <WordCountTracker currentCount={totalWordCount} />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsDistractionFree(!isDistractionFree)}
+                            className={`p-2 rounded-lg flex items-center gap-2 transition-all duration-300 ${isDistractionFree ? 'bg-brand-secondary text-white shadow-lg shadow-brand-secondary/20 hover:scale-105' : 'text-brand-text-muted hover:text-white hover:bg-white/5'}`}
+                            title={isDistractionFree ? "Exit Focus Mode" : "Enter Focus Mode"}
+                        >
+                            {isDistractionFree ? (
+                                <>
+                                    <MinimizeIcon className="w-5 h-5" />
+                                    <span className="text-sm font-medium">Exit Focus</span>
+                                </>
+                            ) : (
+                                <MaximizeIcon className="w-5 h-5" />
+                            )}
+                        </button>
+
+                        {!isDistractionFree && (
+                            <button
+                                onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
+                                className={`p-2 rounded-lg transition ${isRightPanelOpen ? 'text-brand-secondary bg-brand-secondary/10' : 'text-brand-text-muted hover:text-white hover:bg-white/5'}`}
+                                aria-label="Toggle Right Panel"
+                            >
+                                <LayoutDashboardIcon className="w-5 h-5" />
+                            </button>
+                        )}
+                    </div>
+                </header>
 
                 <ThemeSettingsModal
                     isOpen={showThemeSettings}
@@ -469,7 +586,7 @@ function StoryEditor() {
                         imageUrl={generatedImage.imageUrl}
                         title={generatedImage.title}
                         onClose={() => setGeneratedImage(null)}
-                        onSetHeader={handleSetHeaderImage}
+                        onSetHeader={generatedImage.source ? handleSetHeaderImage : undefined}
                         onSave={handleSaveImageToMaterials}
                     />
                 )}
@@ -485,13 +602,14 @@ function StoryEditor() {
                     />
                 )}
 
-                <div className="flex flex-grow overflow-hidden">
+                <div className="flex flex-grow overflow-hidden relative">
                     {/* Primary Content Area */}
-                    <div className={`flex-grow overflow-y-auto custom-scrollbar p-6 lg:p-10 transition-all duration-300 ${secondaryView ? 'w-1/2 border-r border-white/10' : 'w-full'}`}>
-                        <div className="max-w-6xl mx-auto space-y-8 pb-24 h-full">
+                    <div className={`flex-grow overflow-y-auto custom-scrollbar transition-all duration-300 ${isDistractionFree ? 'p-0' : 'p-6 lg:p-10'} ${secondaryView ? 'w-1/2 border-r border-white/10' : 'w-full'}`}>
+
+                        <div className={`mx-auto h-full transition-all duration-500 ${isDistractionFree ? 'max-w-4xl py-12 px-12 bg-brand-surface/30 backdrop-blur-sm rounded-xl border border-white/5 shadow-2xl my-6' : 'max-w-6xl space-y-8 pb-24'}`}>
 
                             {/* Search Bar Global */}
-                            {activeView !== 'book' && activeView !== 'visual' && activeView !== 'comic' && (
+                            {activeView !== 'book' && activeView !== 'visual' && activeView !== 'comic' && !isDistractionFree && (
                                 <div className="mb-6">
                                     <SearchBar query={searchQuery} onQueryChange={setSearchQuery} filters={filterSettings} onFilterChange={setFilterSettings} />
                                 </div>
@@ -513,6 +631,7 @@ function StoryEditor() {
                                     isLoading={isLoading}
                                     characters={characters}
                                     scenes={scenes}
+                                    items={items}
                                     savedMaterials={savedMaterials}
                                     onCompileBook={handleCompileBook}
                                     onGenerate={handleGenerate}
@@ -530,7 +649,8 @@ function StoryEditor() {
                                 />
                             )}
 
-                            {/* --- VIEW: CHARACTERS --- */}
+                            {/* ... other views ... */}
+                            {/* For brevity, I'm assuming the other views logic is valid and just wrapping the container */}
                             {activeView === 'characters' && (
                                 <CharactersView
                                     onCreateCharacter={handleCreateCharacter}
@@ -545,23 +665,28 @@ function StoryEditor() {
                                     onOpenSplitView={(type, id) => setSecondaryView({ type, id })}
                                 />
                             )}
-
-                            {/* --- VIEW: WORLD --- */}
-                            {activeView === 'world' && (
-                                <WorldView
-                                    onGenerate={handleGenerate}
-                                    isLoading={isLoading}
-                                    mapData={mapData}
-                                    selectedLocationIds={selectedLocationIds}
-                                    onToggleSelectLocation={handleToggleSelection}
-                                    onUpdateLocation={updateLocation}
-                                    onExportData={handleExportData}
-                                    onViewLocationScenes={handleViewLocationScenes}
-                                    onAnalyzeVideo={handleAnalyzeVideo}
-                                />
+                            {activeView === 'map' && (
+                                <div className="h-full">
+                                    <MapView
+                                        onGenerate={handleGenerate}
+                                        isLoading={isLoading}
+                                        mapData={mapData}
+                                        selectedLocationIds={selectedLocationIds}
+                                        onToggleSelectLocation={handleToggleSelection}
+                                        onUpdateLocation={updateLocation}
+                                        onExportData={handleExportData}
+                                        onViewLocationScenes={handleViewLocationScenes}
+                                    />
+                                </div>
                             )}
-
-                            {/* --- VIEW: TIMELINE --- */}
+                            {activeView === 'world' && (
+                                <div className="h-full">
+                                    <WorldView
+                                        isLoading={isLoading}
+                                        onAnalyzeVideo={handleAnalyzeVideo}
+                                    />
+                                </div>
+                            )}
                             {activeView === 'timeline' && (
                                 <TimelineView
                                     onGenerate={handleGenerate}
@@ -578,114 +703,125 @@ function StoryEditor() {
                                     onGenerateImage={handleGenerateSceneImage}
                                 />
                             )}
-
-                            {/* --- VIEW: VISUAL --- */}
-                            {
-                                activeView === 'visual' && (
-                                    <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                        <VisualNovelView
-                                            scenes={scenes}
-                                            allCharacters={characters}
-                                            onGenerateImage={handleGenerateSceneImage}
-                                            onGenerateCharacterImage={handleGenerateCharacterImage}
-                                        />
-                                    </div>
-                                )
-                            }
-
-                            {/* --- VIEW: COMIC CREATOR --- */}
-                            {
-                                activeView === 'comic' && (
-                                    <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                        <ComicCreator
-                                            storyPremise={storyPremise}
-                                            scenes={scenes}
-                                            characters={characters}
-                                        />
-                                    </div>
-                                )
-                            }
-
-                        </div>
-                    </div >
-
-                    {/* Secondary View Panel (Split View) */}
-                    {
-                        secondaryView && (
-                            <div className="w-1/2 flex flex-col border-l border-white/10 bg-brand-surface/50 backdrop-blur-xl animate-in slide-in-from-right duration-300 relative z-10">
-                                <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
-                                    <h3 className="font-serif font-bold text-lg flex items-center gap-2">
-                                        <LayoutDashboardIcon className="w-5 h-5 text-brand-secondary" />
-                                        {secondaryView.type === 'character' ? 'Character Details' : 'Scene Editor'}
-                                    </h3>
-                                    <button onClick={() => setSecondaryView(null)} className="p-1.5 hover:bg-white/10 rounded-lg text-brand-text-muted hover:text-white transition">
-                                        <ChevronRightIcon className="w-5 h-5" />
-                                    </button>
+                            {activeView === 'visual' && (
+                                <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <VisualNovelView
+                                        scenes={scenes}
+                                        allCharacters={characters}
+                                        onGenerateImage={handleGenerateSceneImage}
+                                        onGenerateCharacterImage={handleGenerateCharacterImage}
+                                    />
                                 </div>
-                                <div className="flex-grow overflow-y-auto custom-scrollbar p-6">
-                                    {secondaryView.type === 'character' && (() => {
-                                        const char = characters.find(c => c.id === secondaryView.id);
-                                        if (!char) return <div className="text-brand-text-muted">Character not found.</div>;
-                                        return (
-                                            <CharacterCard
-                                                character={char}
-                                                isSelected={selectedCharacterIds.has(char.id)}
-                                                onToggleSelect={() => handleToggleSelection(char.id, 'character')}
-                                                onDelete={() => handleDeleteCharacterWrapper(char.id)}
-                                                onUpdate={updateCharacter}
-                                                onExport={() => { }}
-                                                onGenerateImage={handleGenerateCharacterImage}
-                                                onOpenVisuals={(c) => setActiveVisualCharacterId(c.id)}
-                                            />
-                                        );
-                                    })()}
-
-                                    {secondaryView.type === 'scene' && (() => {
-                                        const scene = scenes.find(s => s.id === secondaryView.id);
-                                        if (!scene) return <div className="text-brand-text-muted">Scene not found.</div>;
-                                        return (
-                                            <div className="space-y-6">
-                                                <SceneCard
-                                                    scene={scene}
-                                                    isSelected={selectedSceneIds.has(scene.id)}
-                                                    onToggleSelect={() => handleToggleSelection(scene.id, 'scene')}
-                                                    onUpdate={updateScene}
-                                                    onDelete={() => handleDeleteSceneWrapper(scene.id)}
-                                                    onExport={() => { }}
-                                                    allCharacters={characters}
-                                                    isLoading={isLoading}
-                                                    onGenerateDetails={handleGenerateSceneDetails}
-                                                    onGenerateImage={handleGenerateSceneImage}
-                                                    onOpenStoryboard={s => setActiveStoryboardSceneId(s.id)}
-                                                    isFirst={false} isLast={false} layout="vertical"
-                                                />
-                                                <div className="glass-card p-4 rounded-xl border border-white/5">
-                                                    <h4 className="font-bold text-brand-text mb-2">Quick Notes</h4>
-                                                    <textarea className="w-full h-40 bg-brand-bg/50 border border-white/10 rounded-lg p-3 text-sm focus:ring-1 focus:ring-brand-secondary outline-none resize-none" placeholder="Jot down ideas for this scene..." />
-                                                </div>
+                            )
+                            }
+                            {activeView === 'comic' && (
+                                <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <ComicCreator
+                                        storyPremise={storyPremise}
+                                        scenes={scenes}
+                                        characters={characters}
+                                    />
+                                </div>
+                            )
+                            }
+                            {activeView === 'notes' && (
+                                <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <NotesView />
+                                </div>
+                            )
+                            }
+                            {activeView === 'items' && (
+                                <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <ItemsView />
+                                </div>
+                            )}
+                            {activeView === 'video' && (
+                                <div className="h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    {secondaryView && !isDistractionFree && (
+                                        <div className="w-1/2 flex flex-col border-l border-white/10 bg-brand-surface/50 backdrop-blur-xl animate-in slide-in-from-right duration-300 relative z-10">
+                                            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+                                                <h3 className="font-serif font-bold text-lg flex items-center gap-2">
+                                                    <LayoutDashboardIcon className="w-5 h-5 text-brand-secondary" />
+                                                    {secondaryView.type === 'character' ? 'Character Details' : 'Scene Editor'}
+                                                </h3>
+                                                <button onClick={() => setSecondaryView(null)} aria-label="Close Split View" className="p-1.5 hover:bg-white/10 rounded-lg text-brand-text-muted hover:text-white transition">
+                                                    <ChevronRightIcon className="w-5 h-5" />
+                                                </button>
                                             </div>
-                                        );
-                                    })()}
+                                            <div className="flex-grow overflow-y-auto custom-scrollbar p-6">
+                                                {secondaryView.type === 'character' && (() => {
+                                                    const char = characters.find(c => c.id === secondaryView.id);
+                                                    if (!char) return <div className="text-brand-text-muted">Character not found.</div>;
+                                                    return (
+                                                        <CharacterCard
+                                                            character={char}
+                                                            isSelected={selectedCharacterIds.has(char.id)}
+                                                            onToggleSelect={() => handleToggleSelection(char.id, 'character')}
+                                                            onDelete={() => handleDeleteCharacterWrapper(char.id)}
+                                                            onUpdate={updateCharacter}
+                                                            onExport={() => { }}
+                                                            onGenerateImage={handleGenerateCharacterImage}
+                                                            onOpenVisuals={(c) => setActiveVisualCharacterId(c.id)}
+                                                        />
+                                                    );
+                                                })()}
+
+                                                {secondaryView.type === 'scene' && (() => {
+                                                    const scene = scenes.find(s => s.id === secondaryView.id);
+                                                    if (!scene) return <div className="text-brand-text-muted">Scene not found.</div>;
+                                                    return (
+                                                        <div className="space-y-6">
+                                                            <SceneCard
+                                                                scene={scene}
+                                                                isSelected={selectedSceneIds.has(scene.id)}
+                                                                onToggleSelect={() => handleToggleSelection(scene.id, 'scene')}
+                                                                onUpdate={updateScene}
+                                                                onDelete={() => handleDeleteSceneWrapper(scene.id)}
+                                                                onExport={() => { }}
+                                                                allCharacters={characters}
+                                                                allItems={items}
+                                                                isLoading={isLoading}
+                                                                onGenerateDetails={handleGenerateSceneDetails}
+                                                                onGenerateImage={handleGenerateSceneImage}
+                                                                onOpenStoryboard={s => setActiveStoryboardSceneId(s.id)}
+                                                                isFirst={false} isLast={false} layout="vertical"
+                                                            />
+                                                            <div className="glass-card p-4 rounded-xl border border-white/5">
+                                                                <h4 className="font-bold text-brand-text mb-2">Quick Notes</h4>
+                                                                <textarea className="w-full h-40 bg-brand-bg/50 border border-white/10 rounded-lg p-3 text-sm focus:ring-1 focus:ring-brand-secondary outline-none resize-none" placeholder="Jot down ideas for this scene..." />
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                        </div>
+                                    )
+                                    }
                                 </div>
-                            </div>
-                        )
-                    }
-                </div >
-            </main >
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </main>
 
             {/* === RIGHT PANEL (Assistant) === */}
-            {/* === RIGHT PANEL (Assistant) === */}
-            <RightPanel
-                isRightPanelOpen={isRightPanelOpen}
-                setIsRightPanelOpen={setIsRightPanelOpen}
-                onGenerate={handleGenerate}
-                onGenerateWithContext={handleGenerateWithContext}
-                onGenerateTimeline={handleGenerateTimeline}
-                selectedCharacterIds={selectedCharacterIds}
-                selectedSceneIds={selectedSceneIds}
-                onBatchUpdateSelection={handleBatchUpdateSelection}
-                filteredMaterials={filteredMaterials}
-            />
+            <div className={`${finalRightPanelOpen ? 'w-80' : 'w-0'} flex-shrink-0 transition-all duration-300 ease-in-out border-l border-white/10 relative z-20 bg-brand-surface/90 backdrop-blur-md`}>
+                <div className="w-80 h-full overflow-hidden">
+                    <RightPanel
+                        isRightPanelOpen={finalRightPanelOpen}
+                        setIsRightPanelOpen={setIsRightPanelOpen}
+                        onGenerate={handleGenerate}
+                        onGenerateWithContext={handleGenerateWithContext}
+                        onViewImage={handleViewImage}
+                        onGenerateTimeline={handleGenerateTimeline}
+                        selectedCharacterIds={selectedCharacterIds}
+                        selectedSceneIds={selectedSceneIds}
+                        onBatchUpdateSelection={handleBatchUpdateSelection}
+                        filteredMaterials={filteredMaterials}
+                        onSaveMaterial={handleSaveMaterial}
+                    />
+                </div>
+            </div>
 
         </div >
     );

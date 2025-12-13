@@ -105,7 +105,7 @@ const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStor
                             {isGenerating ? <LoadingSpinner /> : <WandSparklesIcon className="w-5 h-5" />}
                             {shots.length > 0 ? 'Regenerate Shots' : 'Generate Storyboard'}
                         </button>
-                        <button onClick={onClose} className="p-2 text-brand-text-muted hover:text-white transition rounded-lg hover:bg-white/5">
+                        <button onClick={onClose} className="p-2 text-brand-text-muted hover:text-white transition rounded-lg hover:bg-white/5" title="Close" aria-label="Close">
                             <XIcon className="w-8 h-8" />
                         </button>
                     </div>
@@ -134,7 +134,7 @@ const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStor
                                         {shot.finalImage ? (
                                             <img src={shot.finalImage} alt="Final" className="w-full h-full object-cover" />
                                         ) : shot.sketchImage ? (
-                                            <img src={`data:image/jpeg;base64,${shot.sketchImage}`} alt="Sketch" className="w-full h-full object-cover opacity-80 grayscale contrast-125" />
+                                            <img src={shot.sketchImage.startsWith('data:') ? shot.sketchImage : `data:image/jpeg;base64,${shot.sketchImage}`} alt="Sketch" className="w-full h-full object-cover opacity-80 grayscale contrast-125" />
                                         ) : (
                                             <div className="text-center p-4">
                                                 <p className="text-xs text-brand-text-muted mb-2 italic">"{shot.visualDescription}"</p>
@@ -196,6 +196,8 @@ const StoryboardModal: React.FC<StoryboardModalProps> = ({ scene, onGenerateStor
                     className="hidden"
                     accept="image/*"
                     onChange={handleImageUpload}
+                    aria-label="Upload Image"
+                    title="Upload Image"
                 />
             </div>
         </div>

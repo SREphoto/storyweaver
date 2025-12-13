@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import {
     Character, Scene, MapData, SavedMaterial, Book, GeneratedContent,
-    CharacterType, Tool, StoryboardShot, Location, MaterialType
+    CharacterType, Tool, StoryboardShot, Location, MaterialType, Note, StoryObject
 } from '../types';
 import * as geminiService from '../services/geminiService';
 import JSZip from 'jszip';
@@ -22,6 +22,10 @@ interface StoryContextType {
     setSavedMaterials: React.Dispatch<React.SetStateAction<SavedMaterial[]>>;
     compiledBook: Book | null;
     setCompiledBook: React.Dispatch<React.SetStateAction<Book | null>>;
+    notes: Note[];
+    setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
+    items: StoryObject[];
+    setItems: React.Dispatch<React.SetStateAction<StoryObject[]>>;
 
     // UI State (Global)
     isLoading: boolean;
@@ -48,6 +52,13 @@ interface StoryContextType {
     reorderScenes: (scenes: Scene[]) => void;
     updateLocation: (id: string, updates: Partial<Location>) => void;
     deleteSavedMaterial: (id: string) => void;
+
+    addNote: (note: Note) => void;
+    updateNote: (id: string, updates: Partial<Note>) => void;
+    deleteNote: (id: string) => void;
+    addItem: (item: StoryObject) => void;
+    updateItem: (id: string, updates: Partial<StoryObject>) => void;
+    deleteItem: (id: string) => void;
     resetStory: () => void;
 }
 
@@ -70,6 +81,8 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [mapData, setMapData] = useState<MapData | null>(null);
     const [savedMaterials, setSavedMaterials] = useState<SavedMaterial[]>([]);
     const [compiledBook, setCompiledBook] = useState<Book | null>(null);
+    const [notes, setNotes] = useState<Note[]>([]);
+    const [items, setItems] = useState<StoryObject[]>([]);
 
     // UI State
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -89,7 +102,10 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 if (data.characters) setCharacters(data.characters);
                 if (data.scenes) setScenes(data.scenes);
                 if (data.mapData) setMapData(data.mapData);
+                if (data.mapData) setMapData(data.mapData);
                 if (data.savedMaterials) setSavedMaterials(data.savedMaterials);
+                if (data.notes) setNotes(data.notes);
+                if (data.items) setItems(data.items);
             } catch (e) {
                 console.error("Failed to load saved project data from local storage", e);
             }
@@ -141,12 +157,27 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 materialsFolder?.file(`${safeTitle}_${mat.id}.json`, JSON.stringify(mat, null, 2));
             });
 
-            // 5. World Map
+            // 5. Notes Folder
+            const notesFolder = zip.folder("notes");
+            notes.forEach(note => {
+                const safeTitle = note.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                notesFolder?.file(`${safeTitle}_${note.id}.json`, JSON.stringify(note, null, 2));
+                notesFolder?.file(`${safeTitle}_${note.id}.json`, JSON.stringify(note, null, 2));
+            });
+
+            // 6. Items Folder
+            const itemsFolder = zip.folder("items");
+            items.forEach(item => {
+                const safeName = item.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                itemsFolder?.file(`${safeName}_${item.id}.json`, JSON.stringify(item, null, 2));
+            });
+
+            // 7. World Map
             if (mapData) {
                 zip.file("world_map.json", JSON.stringify(mapData, null, 2));
             }
 
-            // 6. Compiled Book
+            // 8. Compiled Book
             if (compiledBook) {
                 zip.file("compiled_book.json", JSON.stringify(compiledBook, null, 2));
             }
@@ -155,7 +186,7 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             const blob = await zip.generateAsync({ type: "blob" });
 
             // Save locally for redundancy
-            const sessionData = { storyPremise, storyTextToAnalyze, characters, scenes, mapData, savedMaterials };
+            const sessionData = { storyPremise, storyTextToAnalyze, characters, scenes, mapData, savedMaterials, notes, items };
             localStorage.setItem('storyWeaver_project', JSON.stringify(sessionData));
 
             // Trigger Download
@@ -239,6 +270,28 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 }
                 setSavedMaterials(newMaterials);
 
+                const notesFolder = contents.folder("notes");
+                const newNotes: Note[] = [];
+                if (notesFolder) {
+                    const noteFiles = Object.keys(notesFolder.files).filter(name => !notesFolder.files[name].dir);
+                    for (const filename of noteFiles) {
+                        const text = await notesFolder.file(filename)!.async("string");
+                        newNotes.push(JSON.parse(text));
+                    }
+                }
+                setNotes(newNotes);
+
+                const itemsFolder = contents.folder("items");
+                const newItems: StoryObject[] = [];
+                if (itemsFolder) {
+                    const itemFiles = Object.keys(itemsFolder.files).filter(name => !itemsFolder.files[name].dir);
+                    for (const filename of itemFiles) {
+                        const text = await itemsFolder.file(filename)!.async("string");
+                        newItems.push(JSON.parse(text));
+                    }
+                }
+                setItems(newItems);
+
                 if (contents.file("world_map.json")) {
                     const mapText = await contents.file("world_map.json")!.async("string");
                     setMapData(JSON.parse(mapText));
@@ -308,6 +361,30 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setSavedMaterials(prev => prev.filter(m => m.id !== id));
     }, []);
 
+    const addNote = useCallback((note: Note) => {
+        setNotes(prev => [note, ...prev]);
+    }, []);
+
+    const updateNote = useCallback((id: string, updates: Partial<Note>) => {
+        setNotes(prev => prev.map(n => n.id === id ? { ...n, ...updates, updatedAt: new Date().toISOString() } : n));
+    }, []);
+
+    const deleteNote = useCallback((id: string) => {
+        setNotes(prev => prev.filter(n => n.id !== id));
+    }, []);
+
+    const addItem = useCallback((item: StoryObject) => {
+        setItems(prev => [item, ...prev]);
+    }, []);
+
+    const updateItem = useCallback((id: string, updates: Partial<StoryObject>) => {
+        setItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+    }, []);
+
+    const deleteItem = useCallback((id: string) => {
+        setItems(prev => prev.filter(i => i.id !== id));
+    }, []);
+
     return (
         <StoryContext.Provider value={{
             storyPremise, setStoryPremise,
@@ -317,6 +394,8 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             mapData, setMapData,
             savedMaterials, setSavedMaterials,
             compiledBook, setCompiledBook,
+            notes, setNotes,
+            items, setItems,
             isLoading, setIsLoading,
             loadingMessage, setLoadingMessage,
             error, setError,
@@ -325,6 +404,8 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             updateCharacter, createCharacter, deleteCharacter,
             addScene, updateScene, deleteScene, reorderScenes,
             updateLocation, deleteSavedMaterial,
+            addNote, updateNote, deleteNote,
+            addItem, updateItem, deleteItem,
             resetStory: () => {
                 setStoryPremise('');
                 setStoryTextToAnalyze('');
@@ -332,6 +413,8 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 setScenes([]);
                 setMapData(null);
                 setSavedMaterials([]);
+                setNotes([]);
+                setItems([]);
                 setCompiledBook(null);
                 setGeneratedContent(null);
                 setError(null);

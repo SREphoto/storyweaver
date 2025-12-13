@@ -12,6 +12,17 @@ export enum CharacterType {
     MINOR_CHARACTER = 'Minor Character',
 }
 
+export enum ImageStyle {
+    CINEMATIC = 'Cinematic',
+    ANIME = 'Anime',
+    WATERCOLOR = 'Watercolor',
+    OIL_PAINTING = 'Oil Painting',
+    CYBERPUNK = 'Cyberpunk',
+    NOIR = 'Noir',
+    PIXEL_ART = 'Pixel Art',
+    CONCEPT_ART = 'Concept Art',
+}
+
 export interface CharacterProfile {
     history: string;
     arc: string;
@@ -102,10 +113,27 @@ export interface MapData {
 }
 
 export interface StoryObject {
+    id: string;
     name: string;
     appearance: string;
     history: string;
     significance: string;
+    image?: string; // base64
+    notes?: string;
+}
+
+export interface Scene {
+    id: string;
+    title: string;
+    summary: string;
+    fullText: string;
+    characterIds?: string[];
+    itemIds?: string[]; // Links to StoryObjects
+    isTransition?: boolean;
+    headerImage?: string;
+    settingDescription?: string;
+    script?: string;
+    storyboard?: StoryboardShot[];
 }
 
 export interface Book {
@@ -113,7 +141,7 @@ export interface Book {
     chapters: { title: string; content: string }[];
 }
 
-export type MaterialType = Tool | 'CHARACTER_PROFILE' | 'ANALYSIS_SUMMARY' | 'VIDEO_ANALYSIS' | 'TIMELINE' | 'RELATIONSHIP_WEB_VISUAL' | 'MAP_DATA' | 'OBJECT_DATA' | 'OUTLINE' | 'IMAGE';
+export type MaterialType = Tool | 'CHARACTER_PROFILE' | 'ANALYSIS_SUMMARY' | 'VIDEO_ANALYSIS' | 'TIMELINE' | 'RELATIONSHIP_WEB_VISUAL' | 'MAP_DATA' | 'OBJECT_DATA' | 'OUTLINE' | 'IMAGE' | 'NOTE';
 
 export interface GeneratedContent {
     title: string;
@@ -159,7 +187,18 @@ export interface FilterSettings {
     materials: boolean;
 }
 
-export type ViewMode = 'story' | 'characters' | 'world' | 'timeline' | 'book' | 'visual' | 'comic';
+export interface Note {
+    id: string;
+    title: string;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+    tags?: string[];
+    relatedId?: string; // Link to a scene or character
+    relatedType?: 'scene' | 'character' | 'location';
+}
+
+export type ViewMode = 'story' | 'characters' | 'world' | 'map' | 'timeline' | 'book' | 'visual' | 'comic' | 'notes' | 'video' | 'assets' | 'items';
 
 // --- Infinite Heroes Comic Types ---
 
@@ -193,7 +232,7 @@ export interface ComicCharacter {
 
 export type GeneratedImageData = {
     imageUrl: string;
-    source: {
+    source?: {
         type: 'scene' | 'character';
         id: string;
     };

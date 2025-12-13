@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Character, Scene } from '../types';
+import { Character, Scene, StoryObject } from '../types';
 import { ChevronDownIcon, ChevronUpIcon, EditIcon, TrashIcon, DownloadIcon, WriteIcon, ImageIcon, LinkIcon, ArrowLeftIcon, ArrowRightIcon, LayoutDashboardIcon, MapIcon, BookOpenIcon, GripVerticalIcon, FilmIcon } from './icons';
 import SceneEditModal from './SceneEditModal';
 
@@ -12,6 +11,7 @@ interface SceneCardProps {
     onDelete: (sceneId: string) => void;
     onExport: (sceneId: string) => void;
     allCharacters: Character[];
+    allItems: StoryObject[];
     isLoading: boolean;
     onGenerateDetails: (sceneId: string) => void;
     onGenerateImage: (scene: Scene) => void;
@@ -23,7 +23,8 @@ interface SceneCardProps {
     onOpenSplitView?: () => void;
 }
 
-const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onToggleSelect, onUpdate, onDelete, onExport, allCharacters, isLoading, onGenerateDetails, onGenerateImage, onOpenStoryboard, isFirst, isLast, layout = 'grid', onMove, onOpenSplitView }) => {
+const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onToggleSelect, onUpdate, onDelete, onExport, allCharacters, allItems, isLoading, onGenerateDetails, onGenerateImage, onOpenStoryboard, isFirst, isLast, layout = 'grid', onMove, onOpenSplitView }) => {
+
     const [isExpanded, setIsExpanded] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
@@ -47,13 +48,14 @@ const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onToggleSelect
                 <SceneEditModal
                     scene={scene}
                     allCharacters={allCharacters}
+                    allItems={allItems}
                     onSave={handleSave}
                     onClose={() => setShowEditModal(false)}
                 />
             )}
             <div className={`glass-card rounded-lg shadow-sm h-full flex flex-col transition-all duration-300 overflow-hidden border ${isSelected ? 'border-brand-secondary ring-1 ring-brand-secondary/30' : isTransition ? 'border-teal-500/30 bg-teal-900/5' : 'border-white/5 hover:border-white/10 hover:shadow-md'}`}>
                 {scene.headerImage && (
-                    <div className="h-20 bg-cover bg-center opacity-90" style={{ backgroundImage: `url(${scene.headerImage})` }} />
+                    <div className="h-20 bg-cover bg-center opacity-90 bg-[image:var(--bg-image)]" style={{ '--bg-image': `url(${scene.headerImage})` } as React.CSSProperties} />
                 )}
                 <div className="p-3 flex flex-col flex-grow">
                     <div className="flex items-start justify-between gap-2">
@@ -66,6 +68,7 @@ const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onToggleSelect
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={onToggleSelect}
+                                aria-label="Select Scene"
                                 className="h-4 w-4 rounded bg-brand-surface/50 border-brand-text-muted text-brand-secondary focus:ring-brand-secondary cursor-pointer flex-shrink-0"
                             />
                             <div className="flex-grow cursor-pointer group min-w-0" onClick={() => setIsExpanded(!isExpanded)}>
@@ -85,8 +88,8 @@ const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onToggleSelect
                             {/* Mobile/Grid Move Controls */}
                             {(layout === 'vertical' || layout === 'horizontal') && onMove && (
                                 <div className="flex items-center text-brand-text-muted opacity-50 hover:opacity-100 mr-1">
-                                    <button onClick={() => onMove(layout === 'vertical' ? 'up' : 'left')} disabled={isFirst} className="p-0.5 disabled:opacity-20 hover:text-brand-text"><ArrowLeftIcon className="w-3 h-3" /></button>
-                                    <button onClick={() => onMove(layout === 'vertical' ? 'down' : 'right')} disabled={isLast} className="p-0.5 disabled:opacity-20 hover:text-brand-text"><ArrowRightIcon className="w-3 h-3" /></button>
+                                    <button onClick={() => onMove(layout === 'vertical' ? 'up' : 'left')} disabled={isFirst} className="p-0.5 disabled:opacity-20 hover:text-brand-text" title={layout === 'vertical' ? 'Move Up' : 'Move Left'} aria-label={layout === 'vertical' ? 'Move Up' : 'Move Left'}><ArrowLeftIcon className="w-3 h-3" /></button>
+                                    <button onClick={() => onMove(layout === 'vertical' ? 'down' : 'right')} disabled={isLast} className="p-0.5 disabled:opacity-20 hover:text-brand-text" title={layout === 'vertical' ? 'Move Down' : 'Move Right'} aria-label={layout === 'vertical' ? 'Move Down' : 'Move Right'}><ArrowRightIcon className="w-3 h-3" /></button>
                                 </div>
                             )}
 

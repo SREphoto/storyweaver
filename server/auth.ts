@@ -42,10 +42,22 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
+        console.log(`Login attempt for username: '${username}'`);
+
         await db.read();
         const user = db.data.users.find(u => u.username === username);
 
-        if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+        if (!user) {
+            console.log('User not found in database');
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        console.log(`User found: ${user.id}`);
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+        console.log(`Password match result: ${passwordMatch}`);
+
+        if (!passwordMatch) {
+            console.log('Password does not match hash');
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 

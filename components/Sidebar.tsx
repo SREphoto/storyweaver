@@ -3,7 +3,7 @@ import { ViewMode } from '../types';
 import { useStory } from '../contexts/StoryContext';
 import {
     BookOpenIcon, ChevronLeftIcon, UsersIcon, MapIcon, TimelineIcon,
-    FilmIcon, ZapIcon, SaveIcon, ImportIcon, SunIcon, MoonIcon, HelpCircleIcon
+    FilmIcon, ZapIcon, SaveIcon, ImportIcon, SunIcon, MoonIcon, HelpCircleIcon, ClipboardIcon, ImageIcon
 } from './icons';
 
 interface SidebarProps {
@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             StoryWeaver
                         </h1>
                     </div>
-                    <button onClick={() => setIsSidebarOpen(false)} className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-brand-text-muted hover:text-brand-text">
+                    <button onClick={() => setIsSidebarOpen(false)} aria-label="Close Sidebar" className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-brand-text-muted hover:text-brand-text">
                         <ChevronLeftIcon className="w-5 h-5" />
                     </button>
                 </div>
@@ -72,9 +72,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <UsersIcon className="w-5 h-5" />
                         <span className="hidden lg:block font-medium text-sm">Characters</span>
                     </button>
-                    <button onClick={() => setActiveView('world')} title="World & Visuals" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'world' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
+                    <button onClick={() => setActiveView('items')} title="Items" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'items' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
+                        <div className="w-5 h-5 flex items-center justify-center font-bold text-xs border border-current rounded-full">I</div>
+                        <span className="hidden lg:block font-medium text-sm">Items</span>
+                    </button>
+                    <button onClick={() => setActiveView('map')} title="Story Map" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'map' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
                         <MapIcon className="w-5 h-5" />
-                        <span className="hidden lg:block font-medium text-sm">World & Visuals</span>
+                        <span className="hidden lg:block font-medium text-sm">Story Map</span>
+                    </button>
+                    <button onClick={() => setActiveView('world')} title="Visual Inspiration" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'world' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
+                        <FilmIcon className="w-5 h-5" />
+                        <span className="hidden lg:block font-medium text-sm">Visual Inspiration</span>
                     </button>
                     <button onClick={() => setActiveView('timeline')} title="Timeline" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'timeline' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
                         <TimelineIcon className="w-5 h-5" />
@@ -87,6 +95,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <button onClick={() => setActiveView('comic')} title="Comic Creator" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'comic' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
                         <ZapIcon className="w-5 h-5" />
                         <span className="hidden lg:block font-medium text-sm">Comic Creator</span>
+                    </button>
+                    <button onClick={() => setActiveView('notes')} title="Notes" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'notes' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
+                        <ClipboardIcon className="w-5 h-5" />
+                        <span className="hidden lg:block font-medium text-sm">Notes</span>
+                    </button>
+                    <button onClick={() => setActiveView('video')} title="Video Creator" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'video' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
+                        <FilmIcon className="w-5 h-5" />
+                        <span className="hidden lg:block font-medium text-sm">Video Creator</span>
+                    </button>
+                    <button onClick={() => setActiveView('assets')} title="Asset Library" className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${activeView === 'assets' ? 'bg-brand-secondary/10 text-brand-secondary border border-brand-secondary/20' : 'text-brand-text-muted hover:text-brand-text hover:bg-white/5'}`}>
+                        <ImageIcon className="w-5 h-5" />
+                        <span className="hidden lg:block font-medium text-sm">Asset Library</span>
                     </button>
                 </nav>
 
@@ -115,6 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         ref={projectLoadRef}
                         onChange={handleLoadProject}
                         accept=".zip,.json"
+                        title="Load Project File"
                         className="hidden"
                     />
 

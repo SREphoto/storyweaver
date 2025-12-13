@@ -1,13 +1,92 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebData, TimelineItem, OutlineItem, StoryboardShot, Beat, ComicCharacter } from '../types';
+import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebData, TimelineItem, OutlineItem, StoryboardShot, Beat, ComicCharacter, ImageStyle } from '../types';
 
-console.log("Gemini Service Initializing. API Key present:", !!process.env.API_KEY);
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+console.log("Gemini Service Initializing. API Key present:", !!(process.env.API_KEY || process.env.GEMINI_API_KEY));
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || process.env.GEMINI_API_KEY });
 
 const TEXT_MODEL_COMPLEX = 'gemini-2.0-flash-exp';
 const TEXT_MODEL_FAST = 'gemini-2.0-flash-exp';
-const IMAGE_MODEL = 'gemini-2.0-flash-exp';
-const COMIC_IMAGE_MODEL = 'gemini-2.0-flash-exp';
+const IMAGE_MODEL = 'gemini-2.5-flash-image';
+
+/* 
+ * Style Definitions
+ * Maps ImageStyle enum to specific prompt engineering keywords.
+ */
+const STYLE_PROMPTS: Record<ImageStyle, string> = {
+    [ImageStyle.CINEMATIC]: "Cinematic, photorealistic, 8k resolution, detailed texture, dramatic lighting, depth of field, movie still, wide dynamic range.",
+    [ImageStyle.ANIME]: "Anime style, vibrant colors, clean lines, cel shaded, highly detailed, Studio Ghibli or Makoto Shinkai aesthetics.",
+    [ImageStyle.WATERCOLOR]: "Watercolor painting, soft edges, artistic, painting on canvas, gentle brushstrokes, traditional media style.",
+    [ImageStyle.OIL_PAINTING]: "Oil painting, textured brushwork, rich colors, classical art style, masterpiece, impasto details.",
+    [ImageStyle.CYBERPUNK]: "Cyberpunk, neon lights, high tech low life, futuristic, distinct blue and pink lighting, gritty, detailed cityscape.",
+    [ImageStyle.NOIR]: "Film noir, black and white, high contrast, dramatic shadows, moody, mystery, 1940s detective movie aesthetic.",
+    [ImageStyle.PIXEL_ART]: "Pixel art, 16-bit or 32-bit style, retro game aesthetic, clean pixel lines.",
+    [ImageStyle.CONCEPT_ART]: "Concept art, digital painting, highly detailed, polished, artstation trending, illustration.",
+};
+
+// Helper to generate an image using Gemini
+async function generateImage(prompt: string, aspectRatio: string = '16:9'): Promise<string> {
+    let finalPrompt = `${prompt} Aspect ratio: ${aspectRatio}.`;
+    console.log(`[GeminiService] Generating image with model: ${IMAGE_MODEL}`);
+
+    const maxRetries = 3;
+    let lastError: any;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            if (attempt > 1) {
+                console.log(`[GeminiService] Retry attempt ${attempt}/${maxRetries} for image generation...`);
+                // Append stricter instruction on retry
+                finalPrompt += `\n\nSTRICT REQUIREMENT: Output raw image data. Do not provide a text description.`;
+            }
+
+            const response = await ai.models.generateContent({
+                model: IMAGE_MODEL,
+                contents: finalPrompt,
+            });
+
+            const candidate = response.candidates?.[0];
+            const part = candidate?.content?.parts?.[0];
+
+            // Detailed logging for debugging
+            if (candidate?.finishReason !== 'STOP') {
+                console.warn(`[GeminiService] Image generation finishReason: ${candidate?.finishReason}`);
+            }
+            if (candidate?.safetyRatings) {
+                const blockedRatings = candidate.safetyRatings.filter(r => r.probability !== 'NEGLIGIBLE');
+                if (blockedRatings.length > 0) {
+                    console.warn(`[GeminiService] Non-negligible safety ratings:`, JSON.stringify(blockedRatings, null, 2));
+                }
+            }
+
+            // Success Case
+            if (part && 'inlineData' in part && part.inlineData && part.inlineData.data) {
+                return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+            }
+
+            // Text Refusal Case
+            if (part && 'text' in part && part.text) {
+                console.warn(`[GeminiService] Attempt ${attempt} failed: Received text instead of image: "${part.text.substring(0, 50)}..."`);
+                if (attempt === maxRetries) {
+                    throw new Error(`Gemini refused to generate image (after ${maxRetries} attempts): ${part.text}`);
+                }
+                // Continue to next attempt
+                continue;
+            }
+
+            console.error("[GeminiService] Image generation response missing inlineData:", JSON.stringify(response, null, 2));
+            throw new Error(`No image data returned from Gemini. Reason: ${candidate?.finishReason || 'Unknown'}`);
+
+        } catch (error: any) {
+            console.error(`[GeminiService] Attempt ${attempt} error:`, error);
+            lastError = error;
+            if (attempt === maxRetries) break;
+        }
+    }
+
+    throw lastError || new Error("Failed to generate image after multiple attempts.");
+}
+
+// Helper to convert File to Base64 for Gemini
 
 // Helper to convert File to Base64 for Gemini
 const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: string; mimeType: string } }> => {
@@ -24,35 +103,6 @@ const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: s
     };
 };
 
-// Helper to extract image data from generateContent response
-const extractImageFromContent = (response: any): string => {
-    // Log response structure for debugging
-    console.log("Image Generation Response:", response);
-
-    const candidates = response.candidates;
-    if (!candidates || candidates.length === 0) {
-        throw new Error("No candidates returned from API.");
-    }
-
-    const parts = candidates[0].content?.parts;
-    if (parts) {
-        for (const part of parts) {
-            if (part.inlineData && part.inlineData.data) {
-                return part.inlineData.data;
-            }
-        }
-    }
-
-    // If we get here, no image data was found. 
-    // Check if there's text content explaining why (e.g. safety refusal)
-    const textPart = parts?.find((p: any) => p.text);
-    if (textPart) {
-        console.warn("API returned text instead of image:", textPart.text);
-        throw new Error(`API returned text instead of image: ${textPart.text.substring(0, 100)}...`);
-    }
-
-    throw new Error("No image data returned from API.");
-};
 
 // Helper to clean JSON string from Markdown code blocks
 const cleanJson = (text: string): string => {
@@ -340,24 +390,38 @@ export async function generateWithContext(prompt: string, context: string): Prom
     return response.text || '';
 }
 
-export async function generateImageForScene(scene: Scene, characters: Character[]): Promise<string> {
-    const prompt = `Cinematic illustration of ${scene.title}. ${scene.summary}. Characters: ${characters.map(c => c.name).join(', ')}. High resolution, detailed, atmospheric.`;
-    // Use generateContent for 2.5 Flash Image
-    const response = await ai.models.generateContent({
-        model: IMAGE_MODEL,
-        contents: prompt
-    });
-    return extractImageFromContent(response);
+export async function generateImageForScene(scene: Scene, characters: Character[], style: ImageStyle = ImageStyle.CINEMATIC): Promise<string> {
+    const styleKeywords = STYLE_PROMPTS[style] || STYLE_PROMPTS[ImageStyle.CINEMATIC];
+    const prompt = `Generate a cinematic image for the scene: "${scene.title}".
+    Summary: ${scene.summary}
+    Setting: ${scene.settingDescription || 'Appropriate to the story'}
+    
+    Characters present:
+    ${characters.map(c => `${c.name}: ${c.visualStats ? `${c.visualStats.build}, ${c.visualStats.hairColor} hair` : c.initialInfo}`).join('\n')}
+    
+    Style: ${styleKeywords}`;
+
+    return await generateImage(prompt, '16:9');
 }
 
-export async function generateCharacterImage(character: Character): Promise<string> {
-    const prompt = `Character portrait of ${character.name}, ${character.type}. ${character.initialInfo}. ${character.traits}. High quality digital art.`;
-    const response = await ai.models.generateContent({
-        model: IMAGE_MODEL,
-        contents: prompt
-    });
-    return extractImageFromContent(response);
+export async function generateCharacterImage(character: Character, style: ImageStyle = ImageStyle.CONCEPT_ART): Promise<string> {
+    const styleKeywords = STYLE_PROMPTS[style] || STYLE_PROMPTS[ImageStyle.CONCEPT_ART];
+    const prompt = `Generate a full body character portrait.
+    Name: ${character.name}
+    Type: ${character.type}
+    Appearance: ${character.visualStats ?
+            `Height: ${character.visualStats.height}, Build: ${character.visualStats.build}, Hair: ${character.visualStats.hairColor}, Eyes: ${character.visualStats.eyeColor}, Features: ${character.visualStats.distinguishingFeatures}`
+            : character.initialInfo}
+    Outfit: ${character.outfits && character.outfits.length > 0 ? character.outfits[0].description : 'Standard attire'}
+    
+    Style: ${styleKeywords}, neutral background.`;
+
+    const aspectRatio = (style === ImageStyle.PIXEL_ART) ? '1:1' : '3:4'; // Pixel art looks better square
+    return await generateImage(prompt, aspectRatio);
 }
+
+
+
 
 export async function analyzeVideo(videoFile: File | null, videoUrl: string, prompt: string): Promise<string> {
     let contentParts: any[] = [{ text: prompt }];
@@ -448,12 +512,10 @@ export async function generateStoryboardAnalysis(scene: Scene, characters: Chara
 }
 
 export async function generateStoryboardSketch(description: string): Promise<string> {
-    const prompt = `Rough pencil sketch of: ${description}. Black and white, storyboard style.`;
-    const response = await ai.models.generateContent({
-        model: IMAGE_MODEL,
-        contents: prompt
-    });
-    return extractImageFromContent(response);
+    const prompt = `Create a loose storyboard sketch for: ${description}.
+    Style: Black and white, rough sketch, pencil or ink style, storyboard aesthetic.`;
+
+    return await generateImage(prompt, '16:9');
 }
 
 export async function analyzeCharacterVisuals(file: File, mode: 'PHYSICAL_TRAITS' | 'OUTFIT_DETAILS' = 'PHYSICAL_TRAITS'): Promise<{ description: string, traits: string }> {
@@ -515,42 +577,19 @@ export async function generateComicBeat(historyText: string, pageNum: number, ge
 }
 
 export async function generateComicPanelImage(beat: Beat, genre: string, hero: ComicCharacter, costar: ComicCharacter, villain: ComicCharacter): Promise<string> {
-    // Construct multimodal request with reference images
-    const contents: any[] = [];
-
-    // Add references
-    if (hero.image) {
-        contents.push({ text: "REFERENCE 1 [HERO]:" });
-        contents.push({ inlineData: { mimeType: 'image/png', data: hero.image } });
-    }
-    if (costar.image) {
-        contents.push({ text: "REFERENCE 2 [CO-STAR]:" });
-        contents.push({ inlineData: { mimeType: 'image/png', data: costar.image } });
-    }
-    if (villain.image) {
-        contents.push({ text: "REFERENCE 3 [VILLAIN]:" });
-        contents.push({ inlineData: { mimeType: 'image/png', data: villain.image } });
-    }
-
-    const prompt = `STYLE: ${genre} comic book art. High contrast, vibrant colors, bold lines.
-    SCENE: ${beat.scene}.
+    const prompt = `Comic book panel, ${genre} style.
+    Scene: ${beat.scene}
     
-    INSTRUCTIONS:
-    - If scene mentions HERO, use REFERENCE 1. Expression: ${beat.hero_emotion || 'Determined'}.
-    - If scene mentions CO-STAR, use REFERENCE 2. Expression: ${beat.costar_emotion || 'Concerned'}.
-    - If scene mentions VILLAIN, use REFERENCE 3. Expression: ${beat.villain_emotion || 'Evil'}.
+    Characters:
+    Hero: ${hero.name} (${hero.description}) - Emotion: ${beat.hero_emotion}
+    ${costar ? `Co-star: ${costar.name} (${costar.description}) - Emotion: ${beat.costar_emotion}` : ''}
+    ${villain ? `Villain: ${villain.name} (${villain.description}) - Emotion: ${beat.villain_emotion}` : ''}
     
-    Ensure character consistency with provided references.`;
+    Focus: ${beat.focus_char}
+    
+    Style: ${genre} comic book art, vibrant colors, dynamic composition.`;
 
-    contents.push({ text: prompt });
-
-    const response = await ai.models.generateContent({
-        model: COMIC_IMAGE_MODEL,
-        contents: { parts: contents },
-        config: { imageConfig: { aspectRatio: '2:3' } } // Standard comic page ratioish
-    });
-
-    return extractImageFromContent(response);
+    return await generateImage(prompt, '2:3'); // Comic panel ratio
 }
 
 export async function generateVillain(heroDesc: string, genre: string): Promise<{ name: string, desc: string, image: string }> {
@@ -565,13 +604,30 @@ export async function generateVillain(heroDesc: string, genre: string): Promise<
     });
     const persona = JSON.parse(cleanJson(textResponse.text || '{}'));
 
-    // 2. Image generation for reference
-    const imagePrompt = `${genre} comic book villain concept art. ${persona.desc}. Full body, white background.`;
-    const imageResponse = await ai.models.generateContent({
-        model: IMAGE_MODEL,
-        contents: imagePrompt
-    });
-    const image = extractImageFromContent(imageResponse);
+    // 2. Image generation
+    let image = '';
+    try {
+        const imagePrompt = `Comic book villain portrait.
+        Name: ${persona.name}
+        Description: ${persona.desc}
+        Genre: ${genre}
+        Style: ${genre} comic book art, close up character portrait.`;
+
+        image = await generateImage(imagePrompt, '1:1');
+    } catch (e) {
+        console.error("Failed to generate villain image", e);
+    }
 
     return { ...persona, image };
+}
+
+export async function generateItemImage(item: StoryObject): Promise<string> {
+    const prompt = `Visual representation of a story item/artifact.
+    Name: ${item.name}
+    Description: ${item.appearance}
+    History: ${item.history}
+    Style: Concept art, detailed, high quality, fantasy/sci-fi aesthetic appropriate for the item.
+    Object isolated on simple background.`;
+
+    return await generateImage(prompt, '1:1');
 }

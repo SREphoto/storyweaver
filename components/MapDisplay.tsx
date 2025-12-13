@@ -10,9 +10,14 @@ interface MapDisplayProps {
     onUpdateLocation: (id: string, updates: Partial<Location>) => void;
     onExport: () => void;
     onViewScenes?: (locationName: string) => void;
+    isAddingPin?: boolean;
+    onAddPin?: (x: number, y: number) => void;
 }
 
-const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, selectedLocationIds, onToggleSelectLocation, onUpdateLocation, onExport, onViewScenes }) => {
+const MapDisplay: React.FC<MapDisplayProps> = ({
+    mapData, selectedLocationIds, onToggleSelectLocation, onUpdateLocation, onExport, onViewScenes,
+    isAddingPin, onAddPin
+}) => {
     const [activeLocation, setActiveLocation] = useState<Location | null>(mapData.locations[0] || null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedDescription, setEditedDescription] = useState('');
@@ -35,6 +40,15 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, selectedLocationIds, o
         }
     };
 
+    const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isAddingPin && onAddPin) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            onAddPin(x, y);
+        }
+    };
+
     return (
         <div className="flex flex-col gap-6">
             <div className="flex justify-between items-start">
@@ -47,12 +61,13 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, selectedLocationIds, o
             </div>
 
             {/* Map Visualization */}
-            <div className="relative w-full aspect-video bg-[#0f172a] rounded-xl border border-brand-primary/50 overflow-hidden shadow-2xl group select-none">
+            <div
+                className={`relative w-full aspect-video bg-[#0f172a] rounded-xl border border-brand-primary/50 overflow-hidden shadow-2xl group select-none ${isAddingPin ? 'cursor-crosshair ring-2 ring-brand-primary ring-offset-2 ring-offset-black' : ''}`}
+                onClick={handleMapClick}
+            >
                 {/* Map Background Grid / Pattern */}
-                <div className="absolute inset-0 opacity-20" style={{
-                    backgroundImage: `linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px)`,
-                    backgroundSize: '40px 40px'
-                }}></div>
+                {/* Map Background Grid / Pattern */}
+                <div className="absolute inset-0 opacity-20 bg-[size:40px_40px] bg-[image:linear-gradient(rgba(56,189,248,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.1)_1px,transparent_1px)]"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(15,23,42,0.8)_100%)] pointer-events-none"></div>
 
                 {/* Topographic lines simulation */}
@@ -66,9 +81,9 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, selectedLocationIds, o
                 {mapData.locations.map(loc => (
                     <button
                         key={loc.id}
-                        className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 z-10 group/pin`}
-                        style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
-                        onClick={() => setActiveLocation(loc)}
+                        className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 z-10 group/pin left-[--x] top-[--y]`}
+                        style={{ '--x': `${loc.x}%`, '--y': `${loc.y}%` } as React.CSSProperties}
+                        onClick={(e) => { e.stopPropagation(); setActiveLocation(loc); }}
                     >
                         <div className={`relative flex flex-col items-center`}>
                             {/* Pulse Effect for Selected */}
@@ -122,7 +137,8 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ mapData, selectedLocationIds, o
                                     onChange={e => setEditedDescription(e.target.value)}
                                     rows={3}
                                     onClick={e => e.stopPropagation()}
-                                    className="w-full bg-brand-bg/50 border border-brand-primary/50 rounded-md px-2 py-1 text-xs text-brand-text font-serif focus:ring-brand-secondary focus:border-brand-secondary transition"
+                                    className="w-full bg-black/20 border border-white/10 rounded-md p-2 text-xs text-brand-text focus:outline-none focus:border-brand-secondary resize-none"
+                                    aria-label="Location Description"
                                 />
                             ) : (
                                 <p className="text-xs text-brand-text-muted font-serif leading-relaxed line-clamp-4">{loc.description}</p>

@@ -49,17 +49,17 @@ const ComicSetup: React.FC<ComicSetupProps> = ({ onComplete, existingCharacters 
         const char = existingCharacters.find(c => c.id === charId);
         if (char) {
             const updater = role === 'hero' ? setHero : role === 'co-star' ? setCostar : setVillain;
-            
+
             let imageB64 = undefined;
             if (char.headerImage && char.headerImage.startsWith('data:image')) {
                 imageB64 = char.headerImage.split(',')[1];
             }
 
-            updater({ 
-                name: char.name, 
+            updater({
+                name: char.name,
                 description: `${char.initialInfo} ${char.visualStats ? `Appearance: ${char.visualStats.height}, ${char.visualStats.build}, ${char.visualStats.distinguishingFeatures}` : ''}`,
                 image: imageB64,
-                role: role 
+                role: role
             });
         }
     }
@@ -89,16 +89,22 @@ const ComicSetup: React.FC<ComicSetupProps> = ({ onComplete, existingCharacters 
         else onComplete(hero as ComicCharacter, costar as ComicCharacter, villain as ComicCharacter, genre);
     };
 
+    const getMimeType = (b64: string) => {
+        if (b64.startsWith('/9j/')) return 'image/jpeg';
+        if (b64.startsWith('iVBORw0KGgo')) return 'image/png';
+        return 'image/jpeg';
+    };
+
     const renderCharInput = (role: 'hero' | 'co-star' | 'villain', data: Partial<ComicCharacter>, setData: any, inputRef: React.RefObject<HTMLInputElement>) => (
         <div className="glass-panel p-8 rounded-2xl border border-white/10 animate-in fade-in slide-in-from-right-8 duration-500">
             <div className="flex justify-between items-center mb-8">
                 <h3 className="text-3xl font-banger text-brand-secondary uppercase tracking-wider drop-shadow-md">
                     Casting The {role}
                 </h3>
-                
+
                 {existingCharacters.length > 0 && (
                     <div className="relative group">
-                        <select 
+                        <select
                             className="appearance-none bg-brand-bg/50 border border-brand-primary/50 text-brand-text-muted text-sm rounded-lg px-4 py-2 pr-8 hover:text-white hover:border-brand-secondary cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-secondary/50"
                             onChange={(e) => handleImportCharacter(e.target.value, role)}
                             defaultValue=""
@@ -114,17 +120,17 @@ const ComicSetup: React.FC<ComicSetupProps> = ({ onComplete, existingCharacters 
                     </div>
                 )}
             </div>
-            
+
             <div className="flex flex-col md:flex-row gap-8 items-start">
                 {/* Image Upload Section */}
                 <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center gap-4">
-                    <div 
+                    <div
                         onClick={() => inputRef.current?.click()}
                         className="relative w-64 h-64 rounded-2xl overflow-hidden border-2 border-dashed border-white/20 hover:border-brand-secondary cursor-pointer group transition-all duration-300 shadow-2xl bg-black/20"
                     >
                         {data.image ? (
                             <>
-                                <img src={`data:image/png;base64,${data.image}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={role} />
+                                <img src={`data:${getMimeType(data.image)};base64,${data.image}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={role} />
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-2">
                                     <CameraIcon className="w-8 h-8" />
                                     <span className="font-bold text-sm uppercase tracking-wider">Change Photo</span>
@@ -139,18 +145,18 @@ const ComicSetup: React.FC<ComicSetupProps> = ({ onComplete, existingCharacters 
                             </div>
                         )}
                     </div>
-                    <button 
+                    <button
                         onClick={() => inputRef.current?.click()}
                         className="text-xs bg-brand-primary/50 hover:bg-brand-secondary hover:text-white text-brand-text-muted px-4 py-2 rounded-full transition border border-white/5"
                     >
                         {data.image ? 'Replace Image' : 'Select Image File'}
                     </button>
-                    <input 
-                        type="file" 
+                    <input
+                        type="file"
                         ref={inputRef}
-                        onChange={(e) => handleUpload(e, role)} 
-                        className="hidden" 
-                        accept="image/*" 
+                        onChange={(e) => handleUpload(e, role)}
+                        className="hidden"
+                        accept="image/*"
                     />
                 </div>
 
@@ -158,8 +164,8 @@ const ComicSetup: React.FC<ComicSetupProps> = ({ onComplete, existingCharacters 
                 <div className="flex-grow w-full space-y-6">
                     <div>
                         <label className="block text-sm font-bold text-brand-text-muted uppercase tracking-wider mb-2">Character Name</label>
-                        <input 
-                            value={data.name || ''} 
+                        <input
+                            value={data.name || ''}
                             onChange={e => setData({ ...data, name: e.target.value })}
                             className="w-full bg-brand-bg/50 border border-brand-primary/50 rounded-xl px-4 py-3 text-brand-text focus:ring-2 focus:ring-brand-secondary/50 focus:border-brand-secondary transition text-lg font-medium"
                             placeholder={`Name the ${role}...`}
@@ -167,17 +173,17 @@ const ComicSetup: React.FC<ComicSetupProps> = ({ onComplete, existingCharacters 
                     </div>
                     <div>
                         <label className="block text-sm font-bold text-brand-text-muted uppercase tracking-wider mb-2">Visual Description</label>
-                        <textarea 
-                            value={data.description || ''} 
+                        <textarea
+                            value={data.description || ''}
                             onChange={e => setData({ ...data, description: e.target.value })}
                             className="w-full bg-brand-bg/50 border border-brand-primary/50 rounded-xl px-4 py-3 text-brand-text focus:ring-2 focus:ring-brand-secondary/50 focus:border-brand-secondary transition resize-none"
                             placeholder="Describe features, costume, colors, and accessories..."
                             rows={4}
                         />
                     </div>
-                    
+
                     {role === 'villain' && step === 3 && (
-                         <button 
+                        <button
                             onClick={handleAutoGenerateVillain}
                             disabled={isGeneratingVillain || !hero.description}
                             className="w-full flex items-center justify-center gap-2 bg-red-900/30 hover:bg-red-900/50 border border-red-500/30 text-red-400 font-bold py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -224,9 +230,9 @@ const ComicSetup: React.FC<ComicSetupProps> = ({ onComplete, existingCharacters 
                     <>
                         <div className="mb-8 max-w-xs mx-auto">
                             <label className="block text-center text-xs font-bold text-brand-text-muted uppercase tracking-wider mb-2">Comic Genre</label>
-                            <select 
-                                value={genre} 
-                                onChange={e => setGenre(e.target.value)} 
+                            <select
+                                value={genre}
+                                onChange={e => setGenre(e.target.value)}
                                 className="w-full bg-brand-surface border border-brand-secondary/50 text-brand-text text-center font-banger text-xl py-2 rounded-xl focus:ring-2 focus:ring-brand-secondary"
                             >
                                 <option>Superhero</option>
@@ -248,7 +254,7 @@ const ComicSetup: React.FC<ComicSetupProps> = ({ onComplete, existingCharacters 
 
             {/* Navigation Footer */}
             <div className="mt-10 flex justify-end">
-                <button 
+                <button
                     onClick={next}
                     disabled={!canProceed()}
                     className="group flex items-center gap-3 bg-gradient-to-r from-brand-secondary to-brand-accent text-white font-banger text-2xl px-10 py-4 rounded-xl shadow-lg shadow-brand-secondary/20 hover:scale-105 hover:shadow-brand-secondary/40 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"

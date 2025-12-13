@@ -1,8 +1,8 @@
-import React, { useRef } from 'react';
-import { Scene, Character, SavedMaterial, Tool } from '../../types';
+import React, { useState, useRef } from 'react';
+import { Character, Scene, StoryObject, SavedMaterial, ImageStyle, Tool } from '../../types';
 import StoryInputs from '../StoryInputs';
 import SceneCard from '../SceneCard';
-import { BookOpenIcon, RefreshCwIcon, ImportIcon, PlusIcon } from '../icons';
+import { BookOpenIcon, ImageIcon, RefreshCwIcon, ImportIcon, PlusIcon } from '../icons';
 import { useStory } from '../../contexts/StoryContext';
 
 interface StoryViewProps {
@@ -14,6 +14,7 @@ interface StoryViewProps {
     isLoading: boolean;
     characters: Character[];
     scenes: Scene[];
+    items: StoryObject[];
     savedMaterials: SavedMaterial[];
     onCompileBook: () => void;
     onGenerate: (tool: Tool) => void;
@@ -22,25 +23,45 @@ interface StoryViewProps {
     onToggleSelect: (id: string, type: 'scene') => void;
     onUpdateScene: (id: string, updates: Partial<Scene>) => void;
     onDeleteScene: (id: string) => void;
-    onGenerateSceneDetails: (id: string) => void;
-    onGenerateSceneImage: (scene: Scene) => void;
-    onOpenStoryboard: (id: string) => void;
+    onGenerateSceneDetails: (sceneId: string) => void;
+    onGenerateSceneImage: (scene: Scene, style: ImageStyle) => void;
+    onOpenStoryboard: (sceneId: string) => void;
     reorderScenes: (scenes: Scene[]) => void;
-    onOpenSplitView: (type: 'scene', id: string) => void;
+    onOpenSplitView: (type: 'scene' | 'character', id: string) => void;
     addScene: () => void;
 }
 
 const StoryView: React.FC<StoryViewProps> = ({
-    storyPremise, setStoryPremise, storyTextToAnalyze, setStoryTextToAnalyze, onAnalyze, isLoading,
-    characters, scenes, savedMaterials, onCompileBook, onGenerate, filteredScenes,
-    selectedSceneIds, onToggleSelect, onUpdateScene, onDeleteScene, onGenerateSceneDetails,
-    onGenerateSceneImage, onOpenStoryboard, reorderScenes, onOpenSplitView, addScene
+    storyPremise,
+    setStoryPremise,
+    storyTextToAnalyze,
+    setStoryTextToAnalyze,
+    onAnalyze,
+    isLoading,
+    characters,
+    scenes,
+    savedMaterials,
+    items,
+    onCompileBook,
+    onGenerate,
+    filteredScenes,
+    selectedSceneIds,
+    onToggleSelect,
+    onUpdateScene,
+    onDeleteScene,
+    onGenerateSceneDetails,
+    onGenerateSceneImage,
+    onOpenStoryboard,
+    reorderScenes,
+    onOpenSplitView,
+    addScene,
 }) => {
     const { loadProject } = useStory();
+    const [imageStyle, setImageStyle] = useState<ImageStyle>(ImageStyle.CINEMATIC);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col gap-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="glass-card p-6 rounded-2xl border border-white/5">
                     <StoryInputs
@@ -82,7 +103,23 @@ const StoryView: React.FC<StoryViewProps> = ({
 
             <div>
                 <div className="flex justify-between items-end mb-4">
-                    <h2 className="text-2xl font-serif font-bold text-brand-text">Scene List</h2>
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-2xl font-serif font-bold text-brand-text">Scene List</h2>
+                        <div className="relative">
+                            <select
+                                value={imageStyle}
+                                onChange={(e) => setImageStyle(e.target.value as ImageStyle)}
+                                className="appearance-none bg-brand-surface border border-white/10 text-xs px-3 py-1.5 rounded-full text-brand-text pr-8 focus:ring-1 focus:ring-brand-secondary outline-none"
+                                aria-label="Image Style"
+                            >
+                                {Object.values(ImageStyle).map(style => (
+                                    <option key={style} value={style}>{style}</option>
+                                ))}
+                            </select>
+                            <ImageIcon className="w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 text-brand-text-muted pointer-events-none" />
+                        </div>
+                    </div>
+
                     <div className="flex gap-2">
                         <button onClick={() => onGenerate(Tool.REASSESS_FLOW)} disabled={isLoading || scenes.length < 2} className="flex items-center gap-2 text-xs bg-brand-primary/50 hover:bg-brand-primary text-white px-3 py-1.5 rounded-full transition border border-white/10">
                             <RefreshCwIcon className="w-3 h-3" /> Reassess Flow
@@ -91,7 +128,7 @@ const StoryView: React.FC<StoryViewProps> = ({
                             const file = e.target.files?.[0];
                             if (file) loadProject(file);
                             if (fileInputRef.current) fileInputRef.current.value = '';
-                        }} accept=".json" className="hidden" />
+                        }} accept=".json" className="hidden" aria-label="Import Project" />
                         <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 text-xs bg-brand-primary/50 hover:bg-brand-primary text-white px-3 py-1.5 rounded-full transition border border-white/10">
                             <ImportIcon className="w-3 h-3" /> Import
                         </button>
@@ -109,9 +146,10 @@ const StoryView: React.FC<StoryViewProps> = ({
                             onDelete={() => onDeleteScene(scene.id)}
                             onExport={() => { }}
                             allCharacters={characters}
+                            allItems={items}
                             isLoading={isLoading}
                             onGenerateDetails={onGenerateSceneDetails}
-                            onGenerateImage={onGenerateSceneImage}
+                            onGenerateImage={(s) => onGenerateSceneImage(s, imageStyle)}
                             onOpenStoryboard={s => onOpenStoryboard(s.id)}
                             isFirst={index === 0}
                             isLast={index === scenes.length - 1}
@@ -136,7 +174,7 @@ const StoryView: React.FC<StoryViewProps> = ({
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

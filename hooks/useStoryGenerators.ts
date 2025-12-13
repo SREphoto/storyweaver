@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useStory } from '../contexts/StoryContext';
 import * as geminiService from '../services/geminiService';
-import { Character, CharacterType, GeneratedContent, Scene, Tool, SavedMaterial, MaterialType, TimelineItem, RelationshipWebData, MapData, Location, Section, FilterSettings, StoryObject, OutlineItem, Book, ViewMode, StoryboardShot, GeneratedImageData } from '../types';
+import { Character, CharacterType, Scene, GeneratedContent, Tool, ImageStyle, GeneratedImageData, SavedMaterial, MapData } from '../types';
 
 interface UseStoryGeneratorsProps {
     selectedCharacterIds: Set<string>;
@@ -329,22 +329,22 @@ export const useStoryGenerators = ({ selectedCharacterIds, selectedSceneIds, sel
 
         } catch (e) {
             console.error(e);
-            setError('Failed to generate content with context.');
+            setError('Failed to generate text.');
         } finally {
             setIsLoading(false);
             setLoadingMessage('');
         }
-    }, [storyPremise, characters, scenes, savedMaterials, mapData, selectedCharacterIds, selectedSceneIds, setGeneratedContent, setSavedMaterials, setIsLoading, setLoadingMessage, setError, clearOutput]);
+    }, [storyPremise, characters, scenes, mapData, selectedCharacterIds, selectedSceneIds, setIsLoading, setLoadingMessage, setError, clearOutput, setGeneratedContent, setSavedMaterials]);
 
-    const handleGenerateSceneImage = useCallback(async (scene: Scene) => {
+    const handleGenerateSceneImage = useCallback(async (scene: Scene, style?: ImageStyle) => {
         setIsLoading(true);
         setLoadingMessage(`Generating image for "${scene.title}"...`);
         clearOutput();
         try {
             const charactersInScene = characters.filter(c => scene.characterIds?.includes(c.id));
-            const base64Image = await geminiService.generateImageForScene(scene, charactersInScene);
+            const base64Image = await geminiService.generateImageForScene(scene, charactersInScene, style);
             setGeneratedImage({
-                imageUrl: `data:image/png;base64,${base64Image}`,
+                imageUrl: base64Image,
                 source: { type: 'scene', id: scene.id },
                 title: scene.title
             });
@@ -355,16 +355,16 @@ export const useStoryGenerators = ({ selectedCharacterIds, selectedSceneIds, sel
             setIsLoading(false);
             setLoadingMessage('');
         }
-    }, [characters, setIsLoading, setLoadingMessage, setError, clearOutput]);
+    }, [characters, setIsLoading, setLoadingMessage, setError, clearOutput, setGeneratedImage]);
 
-    const handleGenerateCharacterImage = useCallback(async (character: Character) => {
+    const handleGenerateCharacterImage = useCallback(async (character: Character, style?: ImageStyle) => {
         setIsLoading(true);
-        setLoadingMessage(`Generating image for "${character.name}"...`);
+        setLoadingMessage(`Generating portrait for ${character.name}...`);
         clearOutput();
         try {
-            const base64Image = await geminiService.generateCharacterImage(character);
+            const base64Image = await geminiService.generateCharacterImage(character, style);
             setGeneratedImage({
-                imageUrl: `data:image/png;base64,${base64Image}`,
+                imageUrl: base64Image,
                 source: { type: 'character', id: character.id },
                 title: character.name
             });
@@ -375,7 +375,7 @@ export const useStoryGenerators = ({ selectedCharacterIds, selectedSceneIds, sel
             setIsLoading(false);
             setLoadingMessage('');
         }
-    }, [setIsLoading, setLoadingMessage, setError, clearOutput]);
+    }, [setIsLoading, setLoadingMessage, setError, clearOutput, setGeneratedImage]);
 
     const handleAnalyzeVideo = useCallback(async (videoFile: File | null, videoUrl: string, prompt: string) => {
         setIsLoading(true);
