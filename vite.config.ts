@@ -6,6 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   console.log("Vite Config - GEMINI_API_KEY present:", !!env.GEMINI_API_KEY);
   return {
+    base: "/storyweaver/",
     server: {
       port: 3002,
       host: '0.0.0.0',
