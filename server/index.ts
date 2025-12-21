@@ -15,7 +15,13 @@ console.log("Server starting...");
 console.log("API Key present in server process:", !!process.env.GEMINI_API_KEY);
 console.log("API Key length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:3002',
+        'https://srephoto.github.io'
+    ],
+    credentials: true
+}));
 app.use(express.json({ limit: '50mb' })); // Increase limit for large story files
 
 // Routes
