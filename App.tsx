@@ -16,7 +16,7 @@ function App() {
     console.log("App component rendering");
     return (
         <AuthProvider>
-            <Router>
+            <Router basename="/storyweaver">
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
