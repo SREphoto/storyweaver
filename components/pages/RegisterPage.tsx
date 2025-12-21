@@ -81,8 +81,10 @@ const RegisterPage: React.FC = () => {
                 <p className="mt-4 text-center text-sm text-brand-text-muted">
                     Already have an account? <Link to="/login" className="text-brand-primary hover:underline">Login</Link>
                 </p>
-                <div className="mt-6 pt-4 border-t border-white/5 text-center">
-                    <span className="text-[10px] text-brand-text-muted/40 uppercase tracking-widest">Version {pkg.version}</span>
+                <div className="mt-8 pt-6 border-t border-white/10 text-center">
+                    <span className="text-xs font-bold text-amber-500/80 uppercase tracking-widest bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                        Version {pkg.version}
+                    </span>
                 </div>
             </div>
         </div>
