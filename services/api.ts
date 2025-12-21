@@ -45,21 +45,22 @@ export const api = {
     },
 
     async handleMockRequest(endpoint: string, options: RequestInit) {
-        console.log(`[Mock API] ${options.method || 'GET'} ${endpoint}`);
+        const method = options.method || 'GET';
+        console.log(`[Mock API] ${method} ${endpoint}`);
         await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network lag
 
-        if (endpoint === '/auth/login' && options.method === 'POST') {
+        if (endpoint === '/auth/login' && method === 'POST') {
             const { username, password } = JSON.parse(options.body as string);
             const users = mockDB.getUsers();
             const user = users.find((u: any) => u.username === username);
-            if (user && user.password === password) { // In mock mode, we store plain text for simplicity or simplicity
+            if (user && user.password === password) { // In mock mode, we store plain text for simplicity
                 const token = 'mock-jwt-token-' + Math.random();
                 return { token, user: { id: user.id, username: user.username } };
             }
             throw new Error('Invalid credentials');
         }
 
-        if (endpoint === '/auth/register' && options.method === 'POST') {
+        if (endpoint === '/auth/register' && method === 'POST') {
             const { username, password } = JSON.parse(options.body as string);
             const users = mockDB.getUsers();
             if (users.find((u: any) => u.username === username)) {
@@ -72,13 +73,12 @@ export const api = {
             return { token, user: { id: newUser.id, username: newUser.username } };
         }
 
-        if (endpoint === '/stories' && options.method === 'GET') {
+        if (endpoint === '/stories' && method === 'GET') {
             const stories = mockDB.getStories();
-            // Filter by user if possible (we'd need to decode token, but mock is simple)
             return stories;
         }
 
-        if (endpoint === '/stories' && options.method === 'POST') {
+        if (endpoint === '/stories' && method === 'POST') {
             const storyData = JSON.parse(options.body as string);
             const stories = mockDB.getStories();
             const newStory = {
@@ -91,7 +91,7 @@ export const api = {
             return newStory;
         }
 
-        if (endpoint.startsWith('/stories/') && options.method === 'GET') {
+        if (endpoint.startsWith('/stories/') && method === 'GET') {
             const id = endpoint.split('/').pop();
             const stories = mockDB.getStories();
             const story = stories.find((s: any) => s.id === id);
@@ -99,7 +99,7 @@ export const api = {
             throw new Error('Story not found');
         }
 
-        if (endpoint.startsWith('/stories/') && options.method === 'PUT') {
+        if (endpoint.startsWith('/stories/') && method === 'PUT') {
             const id = endpoint.split('/').pop();
             const storyUpdate = JSON.parse(options.body as string);
             let stories = mockDB.getStories();
@@ -112,7 +112,15 @@ export const api = {
             throw new Error('Story not found');
         }
 
-        return { message: 'Mock response success' };
+        if (endpoint.startsWith('/stories/') && method === 'DELETE') {
+            const id = endpoint.split('/').pop();
+            let stories = mockDB.getStories();
+            stories = stories.filter((s: any) => s.id !== id);
+            mockDB.saveStories(stories);
+            return { success: true };
+        }
+
+        return []; // Default to empty array for unknown GET requests to prevent UI crashes
     },
 
     get(endpoint: string) {
