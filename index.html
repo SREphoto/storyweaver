@@ -6,7 +6,42 @@
   <link rel="icon" type="image/svg+xml" href="./vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Story Weaver AI</title>
-
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: 'rgb(var(--color-bg) / <alpha-value>)',
+              surface: 'rgb(var(--color-surface) / <alpha-value>)',
+              primary: 'rgb(var(--color-primary) / <alpha-value>)',
+              secondary: 'rgb(var(--color-secondary) / <alpha-value>)',
+              accent: 'rgb(var(--color-accent) / <alpha-value>)',
+              text: 'rgb(var(--color-text) / <alpha-value>)',
+              'text-muted': 'rgb(var(--color-text-muted) / <alpha-value>)',
+            },
+            comic: {
+              yellow: '#FFD700',
+              red: '#DC2626',
+              cyan: '#06b6d4',
+              black: '#111111',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Lora', 'serif'],
+            comic: ['Comic Neue', 'cursive'],
+            banger: ['Bangers', 'cursive'],
+          },
+          backdropBlur: {
+            xs: '2px',
+          }
+        }
+      }
+    }
+  </script>
   <style>
     :root {
       /* Dark Mode (Default) - Deep Space & Starlight */
@@ -174,8 +209,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
     rel="stylesheet">
-  <script type="module" crossorigin src="/storyweaver/assets/index-aerJjHEH.js"></script>
-  <link rel="stylesheet" crossorigin href="/storyweaver/assets/index-CwevWFbU.css">
+  <script type="module" crossorigin src="/storyweaver/assets/index-B7eStVDb.js"></script>
+  <link rel="stylesheet" crossorigin href="/storyweaver/assets/index-CcxgRLMR.css">
 </head>
 
 <body class="font-sans antialiased selection:bg-brand-secondary selection:text-white h-screen w-screen overflow-hidden">
