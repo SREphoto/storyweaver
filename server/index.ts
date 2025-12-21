@@ -15,12 +15,22 @@ console.log("Server starting...");
 console.log("API Key present in server process:", !!process.env.GEMINI_API_KEY);
 console.log("API Key length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
 
+const allowedOrigins = [
+    'http://localhost:3002',
+    'https://srephoto.github.io'
+];
+
 app.use(cors({
-    origin: [
-        'http://localhost:3002',
-        'https://srephoto.github.io'
-    ],
-    credentials: true
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.github.io')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '50mb' })); // Increase limit for large story files
 
