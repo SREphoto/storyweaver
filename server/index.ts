@@ -16,16 +16,18 @@ console.log("API Key present in server process:", !!process.env.GEMINI_API_KEY);
 console.log("API Key length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
 
 app.use(cors({
-    origin: [
-        'https://srephoto.github.io',
-        'http://localhost:3002',
-        'https://srephoto.github.io/storyweaver'
-    ],
+    origin: (origin, callback) => callback(null, true),
     credentials: true,
-    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+    optionsSuccessStatus: 200
 }));
 
-// Handle preflight requests for all routes
+// Debug logging middleware
+app.use((req, res, next) => {
+    console.log(`[Request] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+    next();
+});
+
+// Handle preflight requests
 app.options('*', cors());
 app.use(express.json({ limit: '50mb' })); // Increase limit for large story files
 
