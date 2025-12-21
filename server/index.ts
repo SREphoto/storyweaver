@@ -15,23 +15,18 @@ console.log("Server starting...");
 console.log("API Key present in server process:", !!process.env.GEMINI_API_KEY);
 console.log("API Key length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
 
-const allowedOrigins = [
-    'http://localhost:3002',
-    'https://srephoto.github.io'
-];
-
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.github.io')) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: [
+        'https://srephoto.github.io',
+        'http://localhost:3002',
+        'https://srephoto.github.io/storyweaver'
+    ],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
+
+// Handle preflight requests for all routes
+app.options('*', cors());
 app.use(express.json({ limit: '50mb' })); // Increase limit for large story files
 
 // Routes
