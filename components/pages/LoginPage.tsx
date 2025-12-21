@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
+import pkg from '../../package.json';
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -80,6 +81,9 @@ const LoginPage: React.FC = () => {
                 <p className="mt-4 text-center text-sm text-brand-text-muted">
                     Don't have an account? <Link to="/register" className="text-brand-secondary hover:underline">Register</Link>
                 </p>
+                <div className="mt-6 pt-4 border-t border-white/5 text-center">
+                    <span className="text-[10px] text-brand-text-muted/40 uppercase tracking-widest">Version {pkg.version}</span>
+                </div>
             </div>
         </div>
     );

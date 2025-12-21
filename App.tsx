@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { StoryProvider } from './contexts/StoryContext';
 import LoginPage from './components/pages/LoginPage';
@@ -16,7 +16,7 @@ function App() {
     console.log("App component rendering");
     return (
         <AuthProvider>
-            <Router basename="/storyweaver">
+            <Router>
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
