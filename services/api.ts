@@ -16,7 +16,7 @@ const mockDB = {
     }
 };
 
-const isStatic = window.location.hostname.includes('github.io') || window.location.hostname.includes('vercel.app');
+const isStatic = (window.location.hostname.includes('github.io') || window.location.hostname.includes('vercel.app')) && !import.meta.env.VITE_API_URL;
 
 export const api = {
     async request(endpoint: string, options: RequestInit = {}) {
