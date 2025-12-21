@@ -45,11 +45,10 @@ router.post('/login', async (req, res) => {
         console.log(`Login attempt for username: '${username}'`);
 
         await db.read();
-        const user = db.data.users.find(u => u.username === username);
+        const user = db.data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
 
         if (!user) {
-            console.log(`User not found in database: '${username}'`);
-            console.log(`Current users in DB:`, db.data.users.map(u => `'${u.username}'`));
+            console.log(`Login failed: user '${username}' not found.`);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
