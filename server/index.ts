@@ -35,10 +35,12 @@ app.use((req, res, next) => {
 
 // Debug logging middleware
 app.use((req, res, next) => {
-    console.log(`[Request] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
     next();
 });
-app.use(express.json({ limit: '50mb' })); // Increase limit for large story files
+
+// Memory-safe JSON limit for Render Free Tier
+app.use(express.json({ limit: '10mb' }));
 
 // Routes
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));

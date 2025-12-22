@@ -34,7 +34,11 @@ const DashboardPage: React.FC = () => {
         }
     };
 
+    const [isCreating, setIsCreating] = useState(false);
+
     const handleCreateNew = async () => {
+        if (isCreating) return;
+        setIsCreating(true);
         try {
             const newStory = await api.post('/stories', {
                 title: 'New Story',
@@ -47,13 +51,10 @@ const DashboardPage: React.FC = () => {
                     storyTextToAnalyze: ''
                 }
             });
-            // Load the new story into context
-            // We need to fetch the full story data first, but here we just created it empty
-            // Actually, we should probably navigate to the editor and let it load there.
-            // For now, let's just load it directly if we can, or navigate to /editor/:id
             navigate(`/editor/${newStory.id}`);
         } catch (error) {
             console.error('Failed to create story', error);
+            setIsCreating(false); // Only reset on error so they can try again
         }
     };
 
