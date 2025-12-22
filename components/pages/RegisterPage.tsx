@@ -11,16 +11,20 @@ const RegisterPage: React.FC = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             const { token, user } = await api.post('/auth/register', { username, password });
             login(token, user);
             navigate('/');
         } catch (err: any) {
             setError(err.message);
+            setIsSubmitting(false);
         }
     };
 
@@ -74,8 +78,12 @@ const RegisterPage: React.FC = () => {
                             </button>
                         </div>
                     </div>
-                    <button type="submit" className="w-full bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold py-2 px-4 rounded transition">
-                        Register
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold py-2 px-4 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isSubmitting ? 'Registering...' : 'Register'}
                     </button>
                 </form>
                 <p className="mt-4 text-center text-sm text-brand-text-muted">
