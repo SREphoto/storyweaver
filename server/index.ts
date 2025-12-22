@@ -15,23 +15,20 @@ console.log("Server starting...");
 console.log("API Key present in server process:", !!process.env.GEMINI_API_KEY);
 console.log("API Key length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
 
-// Manual CORS Middleware (more robust for some environments)
+// Manual CORS Middleware - Ultra-robust origin echoing
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-    // Allow any origin that ends in github.io or is localhost
-    if (origin && (origin.includes('github.io') || origin.includes('localhost'))) {
+    if (origin) {
         res.setHeader('Access-Control-Allow-Origin', origin);
-    } else if (!origin) {
-        // Fallback for non-browser requests
-        res.setHeader('Access-Control-Allow-Origin', '*');
     }
 
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Max-Age', '86400'); // Cache preflight for 24h
 
     if (req.method === 'OPTIONS') {
-        return res.status(200).send();
+        return res.sendStatus(200);
     }
     next();
 });
