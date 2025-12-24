@@ -15,7 +15,7 @@ async function testBanana() {
 
     // List of models to try
     const modelsToTry = [
-        'gemini-2.0-flash-exp-image-generation',
+        'gemini-2.5-flash-image',
         // 'gemini-2.5-flash-image', 
     ];
 

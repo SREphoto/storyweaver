@@ -13,7 +13,13 @@ const IMAGE_MODEL = 'gemini-2.5-flash-image'; // Nano Banana
 // Generic AI Content Generation Endpoint
 router.post('/generate', authenticateToken, async (req: any, res) => {
     try {
-        const { prompt, config, model = TEXT_MODEL } = req.body;
+        let { prompt, config, model = TEXT_MODEL } = req.body;
+
+        // Force upgrade legacy models to prevent 404s
+        if (model === 'gemini-1.5-flash' || model === 'gemini-1.5-pro') {
+            console.log(`[AI Server] Upgrading legacy model ${model} to ${TEXT_MODEL}`);
+            model = TEXT_MODEL;
+        }
 
         if (!process.env.GEMINI_API_KEY) {
             return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
