@@ -16,23 +16,17 @@ console.log("Server starting...");
 console.log("API Key present in server process:", !!process.env.GEMINI_API_KEY);
 console.log("API Key length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
 
-// Manual CORS Middleware - Ultra-robust origin echoing
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (origin) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
+// CORS configuration
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow all origins (origin will be undefined for non-CORS requests)
+        callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Access-Control-Max-Age', '86400'); // Cache preflight for 24h
-
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    next();
-});
 
 // Debug logging middleware
 app.use((req, res, next) => {
