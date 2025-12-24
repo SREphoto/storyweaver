@@ -1,15 +1,19 @@
 import { api } from './api';
 import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebData, TimelineItem, OutlineItem, StoryboardShot, Beat, ComicCharacter, ImageStyle } from '../types';
 
+const TEXT_MODEL_COMPLEX = 'gemini-3.0-pro';
+const TEXT_MODEL_FAST = 'gemini-3.0-flash';
+const IMAGE_MODEL = 'gemini-2.5-flash-image';
+const IMAGE_MODEL_PRO = 'gemini-3-pro-image-preview';
+
+// Simple in-memory cache
+export const geminiCache = new Map<string, any>();
+
 // Use backend proxy for all AI calls to keep keys secure
-async function callAI(prompt: string, config?: any, model?: string) {
+export async function callAI(prompt: string, config?: any, model?: string) {
     const response = await api.post('/ai/generate', { prompt, config, model });
     return response.text;
 }
-
-const TEXT_MODEL_COMPLEX = 'gemini-2.0-flash-exp';
-const TEXT_MODEL_FAST = 'gemini-2.0-flash-exp';
-const IMAGE_MODEL = 'gemini-2.5-flash-image';
 
 /* 
  * Style Definitions
@@ -26,12 +30,10 @@ const STYLE_PROMPTS: Record<ImageStyle, string> = {
     [ImageStyle.CONCEPT_ART]: "Concept art, digital painting, highly detailed, polished, artstation trending, illustration.",
 };
 
-// Helper to generate an image using Gemini (Currently using direct call if available, otherwise would need bridge)
-// NOTE: For full security, images should also be bridged.
-// Since we want to hide keys, we'll use a placeholder or bridge later.
+// Helper to generate an image using the secure backend bridge
 async function generateImage(prompt: string, aspectRatio: string = '16:9'): Promise<string> {
-    console.warn("Direct image generation from frontend is disabled for key security. Use backend bridge.");
-    throw new Error("Image Generation must be proxied through backend to protect keys.");
+    const response = await api.post('/ai/generate-image', { prompt, aspectRatio });
+    return response.url; // The bridge returns { url: "data:..." }
 }
 
 // Helper to convert File to Base64 for Gemini
@@ -155,11 +157,7 @@ export async function generatePlotIdeas(premise: string, existingStory: string, 
 
 export async function generateSceneTransition(scenes: Scene[]): Promise<string> {
     const prompt = `Write a smooth narrative transition between scene "${scenes[0].title}" and "${scenes[1].title}".`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_FAST,
-        contents: prompt
-    });
-    return response.text || '';
+    return await callAI(prompt, {}, TEXT_MODEL_FAST);
 }
 
 export async function generateMapData(content: string): Promise<MapData> {
