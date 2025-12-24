@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { initDB } from './db';
 import authRoutes from './auth';
 import storyRoutes from './stories';
+import aiRoutes from './ai';
 
 dotenv.config({ path: '.env.local' });
 dotenv.config(); // Also load default .env if needed
@@ -46,6 +47,7 @@ app.use(express.json({ limit: '10mb' }));
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/stories', storyRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Initialize DB and start server
 initDB().then(() => {

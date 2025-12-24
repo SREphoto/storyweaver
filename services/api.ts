@@ -17,10 +17,12 @@ const mockDB = {
 };
 
 const isStatic = (window.location.hostname.includes('github.io') || window.location.hostname.includes('vercel.app')) && !import.meta.env.VITE_API_URL;
+// FORCE REAL API if VITE_API_URL is preset
+const useMock = false; // Disable mock DB for real authentication testing
 
 export const api = {
     async request(endpoint: string, options: RequestInit = {}) {
-        if (isStatic) {
+        if (useMock && isStatic) {
             return this.handleMockRequest(endpoint, options);
         }
 

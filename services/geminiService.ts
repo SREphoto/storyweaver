@@ -1,8 +1,11 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { api } from './api';
 import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebData, TimelineItem, OutlineItem, StoryboardShot, Beat, ComicCharacter, ImageStyle } from '../types';
 
-console.log("Gemini Service Initializing. API Key present:", !!(process.env.API_KEY || process.env.GEMINI_API_KEY));
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || process.env.GEMINI_API_KEY });
+// Use backend proxy for all AI calls to keep keys secure
+async function callAI(prompt: string, config?: any, model?: string) {
+    const response = await api.post('/ai/generate', { prompt, config, model });
+    return response.text;
+}
 
 const TEXT_MODEL_COMPLEX = 'gemini-2.0-flash-exp';
 const TEXT_MODEL_FAST = 'gemini-2.0-flash-exp';
@@ -23,67 +26,12 @@ const STYLE_PROMPTS: Record<ImageStyle, string> = {
     [ImageStyle.CONCEPT_ART]: "Concept art, digital painting, highly detailed, polished, artstation trending, illustration.",
 };
 
-// Helper to generate an image using Gemini
+// Helper to generate an image using Gemini (Currently using direct call if available, otherwise would need bridge)
+// NOTE: For full security, images should also be bridged.
+// Since we want to hide keys, we'll use a placeholder or bridge later.
 async function generateImage(prompt: string, aspectRatio: string = '16:9'): Promise<string> {
-    let finalPrompt = `${prompt} Aspect ratio: ${aspectRatio}.`;
-    console.log(`[GeminiService] Generating image with model: ${IMAGE_MODEL}`);
-
-    const maxRetries = 3;
-    let lastError: any;
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            if (attempt > 1) {
-                console.log(`[GeminiService] Retry attempt ${attempt}/${maxRetries} for image generation...`);
-                // Append stricter instruction on retry
-                finalPrompt += `\n\nSTRICT REQUIREMENT: Output raw image data. Do not provide a text description.`;
-            }
-
-            const response = await ai.models.generateContent({
-                model: IMAGE_MODEL,
-                contents: finalPrompt,
-            });
-
-            const candidate = response.candidates?.[0];
-            const part = candidate?.content?.parts?.[0];
-
-            // Detailed logging for debugging
-            if (candidate?.finishReason !== 'STOP') {
-                console.warn(`[GeminiService] Image generation finishReason: ${candidate?.finishReason}`);
-            }
-            if (candidate?.safetyRatings) {
-                const blockedRatings = candidate.safetyRatings.filter(r => r.probability !== 'NEGLIGIBLE');
-                if (blockedRatings.length > 0) {
-                    console.warn(`[GeminiService] Non-negligible safety ratings:`, JSON.stringify(blockedRatings, null, 2));
-                }
-            }
-
-            // Success Case
-            if (part && 'inlineData' in part && part.inlineData && part.inlineData.data) {
-                return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-            }
-
-            // Text Refusal Case
-            if (part && 'text' in part && part.text) {
-                console.warn(`[GeminiService] Attempt ${attempt} failed: Received text instead of image: "${part.text.substring(0, 50)}..."`);
-                if (attempt === maxRetries) {
-                    throw new Error(`Gemini refused to generate image (after ${maxRetries} attempts): ${part.text}`);
-                }
-                // Continue to next attempt
-                continue;
-            }
-
-            console.error("[GeminiService] Image generation response missing inlineData:", JSON.stringify(response, null, 2));
-            throw new Error(`No image data returned from Gemini. Reason: ${candidate?.finishReason || 'Unknown'}`);
-
-        } catch (error: any) {
-            console.error(`[GeminiService] Attempt ${attempt} error:`, error);
-            lastError = error;
-            if (attempt === maxRetries) break;
-        }
-    }
-
-    throw lastError || new Error("Failed to generate image after multiple attempts.");
+    console.warn("Direct image generation from frontend is disabled for key security. Use backend bridge.");
+    throw new Error("Image Generation must be proxied through backend to protect keys.");
 }
 
 // Helper to convert File to Base64 for Gemini
@@ -127,21 +75,10 @@ export async function generateCharacterProfile(name: string, type: CharacterType
 
     Return JSON with "history" (detailed backstory, 2 paragraphs) and "arc" (character growth/journey).`;
 
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt,
-        config: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-                type: Type.OBJECT,
-                properties: {
-                    history: { type: Type.STRING },
-                    arc: { type: Type.STRING }
-                }
-            }
-        }
+    const text = await callAI(prompt, {
+        responseMimeType: 'application/json'
     });
-    return JSON.parse(cleanJson(response.text || '{"history": "", "arc": ""}'));
+    return JSON.parse(cleanJson(text || '{"history": "", "arc": ""}'));
 }
 
 export async function analyzeStoryText(premise: string, text: string): Promise<{ characters: { name: string, type: CharacterType, description: string, traits: string, history: string, arc: string }[], scenes: { title: string, summary: string, fullText: string, characters_present: string[] }[] }> {
@@ -173,12 +110,8 @@ export async function analyzeStoryText(premise: string, text: string): Promise<{
       ]
     }`;
 
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt,
-        config: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(cleanJson(response.text || '{"characters": [], "scenes": []}'));
+    const text_resp = await callAI(prompt, { responseMimeType: 'application/json' });
+    return JSON.parse(cleanJson(text_resp || '{"characters": [], "scenes": []}'));
 }
 
 export async function generateNextChapter(premise: string, existingStory: string, characters: Character[], scenes: Scene[]): Promise<string> {
@@ -189,11 +122,7 @@ export async function generateNextChapter(premise: string, existingStory: string
     Recent Scenes: ${scenes.slice(-3).map(s => s.title).join(', ')}
     
     Write a compelling chapter.`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt
-    });
-    return response.text || '';
+    return await callAI(prompt, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateRelationshipWeb(characters: Character[]): Promise<RelationshipWebData> {
@@ -205,19 +134,11 @@ export async function generateRelationshipWeb(characters: Character[]): Promise<
     }
     Use the character names to map to provided IDs if possible, otherwise use names as IDs.`;
 
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_FAST,
-        contents: prompt,
-        config: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(cleanJson(response.text || '{"nodes": [], "links": []}'));
+    const text = await callAI(prompt, { responseMimeType: 'application/json' }, TEXT_MODEL_FAST);
+    return JSON.parse(cleanJson(text || '{"nodes": [], "links": []}'));
 }
 
 export async function generatePlotIdeas(premise: string, existingStory: string, characters: Character[]): Promise<string> {
-    console.log("generatePlotIdeas called");
-    console.log("Premise:", premise);
-    console.log("API Key available:", !!process.env.API_KEY);
-
     const prompt = `Brainstorm plot ideas/twists.
     Premise: ${premise}
     Characters: ${characters.map(c => c.name).join(', ')}
@@ -225,30 +146,10 @@ export async function generatePlotIdeas(premise: string, existingStory: string, 
     List 5 creative plot ideas.`;
 
     try {
-        const response = await ai.models.generateContent({
-            model: TEXT_MODEL_COMPLEX,
-            contents: prompt
-        });
-        console.log("generatePlotIdeas success", response);
-        return response.text || '';
+        return await callAI(prompt, {}, TEXT_MODEL_COMPLEX);
     } catch (error: any) {
-        console.error("generatePlotIdeas FAILED:", error);
-        if (error.response) {
-            console.error("Error response:", error.response);
-        }
-        console.error("Error message:", error.message);
-        // Fallback to flash if pro fails?
-        try {
-            console.log("Retrying with Flash model...");
-            const response = await ai.models.generateContent({
-                model: TEXT_MODEL_FAST,
-                contents: prompt
-            });
-            return response.text || '';
-        } catch (retryError) {
-            console.error("Retry failed:", retryError);
-            throw error;
-        }
+        console.error("generatePlotIdeas FAILED, retrying with Flash...", error);
+        return await callAI(prompt, {}, TEXT_MODEL_FAST);
     }
 }
 
@@ -269,12 +170,8 @@ export async function generateMapData(content: string): Promise<MapData> {
         "locations": [{"id": "loc_1", "name": "...", "description": "...", "x": 20, "y": 50}] 
     }
     x and y should be between 0 and 100.`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_FAST,
-        contents: prompt,
-        config: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(cleanJson(response.text || '{}'));
+    const text = await callAI(prompt, { responseMimeType: 'application/json' }, TEXT_MODEL_FAST);
+    return JSON.parse(cleanJson(text || '{}'));
 }
 
 export async function reassessNarrativeFlow(premise: string, scenes: Scene[]): Promise<string> {
@@ -283,31 +180,19 @@ export async function reassessNarrativeFlow(premise: string, scenes: Scene[]): P
     Scene Sequence: ${scenes.map(s => s.title).join(' -> ')}
     
     Identify pacing issues, plot holes, or structural improvements.`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt
-    });
-    return response.text || '';
+    return await callAI(prompt, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateDialogue(char1: Character, char2: Character): Promise<string> {
     const prompt = `Write a dialogue scene between ${char1.name} (${char1.traits}) and ${char2.name} (${char2.traits}).`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt
-    });
-    return response.text || '';
+    return await callAI(prompt, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateObject(premise: string): Promise<StoryObject> {
     const prompt = `Invent a key object/artifact for the story: ${premise}.
     Return JSON: { "name": "...", "appearance": "...", "history": "...", "significance": "..." }`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_FAST,
-        contents: prompt,
-        config: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(cleanJson(response.text || '{}'));
+    const text = await callAI(prompt, { responseMimeType: 'application/json' }, TEXT_MODEL_FAST);
+    return JSON.parse(cleanJson(text || '{}'));
 }
 
 export async function generateSetting(premise: string, sceneContext?: { title: string, summary: string }): Promise<string> {
@@ -316,11 +201,7 @@ export async function generateSetting(premise: string, sceneContext?: { title: s
     ${sceneContext ? `Scene: ${sceneContext.title}\nSummary: ${sceneContext.summary}` : ''}
     
     Provide a rich, sensory description (sight, sound, smell).`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt
-    });
-    return response.text || '';
+    return await callAI(prompt, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateOutline(premise: string, characters: Character[], plotIdeas?: string): Promise<OutlineItem[]> {
@@ -330,12 +211,8 @@ export async function generateOutline(premise: string, characters: Character[], 
     Ideas: ${plotIdeas || 'None'}
     
     Return JSON array of objects: { "act": "Act I", "title": "...", "summary": "..." }`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt,
-        config: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(cleanJson(response.text || '[]'));
+    const text = await callAI(prompt, { responseMimeType: 'application/json' }, TEXT_MODEL_COMPLEX);
+    return JSON.parse(cleanJson(text || '[]'));
 }
 
 export async function generateMidjourneyPrompts(scene: Scene, characters: Character[]): Promise<string> {
@@ -375,19 +252,11 @@ export async function generateMidjourneyPrompts(scene: Scene, characters: Charac
     3. Ensure the characters described match the provided visual stats and outfits.
     4. Provide a list of prompts: Wide Shot, Medium Shot, Close Up, and Action Shot.`;
 
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt
-    });
-    return response.text || '';
+    return await callAI(prompt, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateWithContext(prompt: string, context: string): Promise<string> {
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: `Context:\n${context}\n\nInstruction:\n${prompt}`
-    });
-    return response.text || '';
+    return await callAI(`Context:\n${context}\n\nInstruction:\n${prompt}`, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateImageForScene(scene: Scene, characters: Character[], style: ImageStyle = ImageStyle.CINEMATIC): Promise<string> {
@@ -424,32 +293,21 @@ export async function generateCharacterImage(character: Character, style: ImageS
 
 
 export async function analyzeVideo(videoFile: File | null, videoUrl: string, prompt: string): Promise<string> {
-    let contentParts: any[] = [{ text: prompt }];
-
-    if (videoFile) {
-        const filePart = await fileToGenerativePart(videoFile);
-        contentParts = [filePart, { text: prompt }];
-    } else if (videoUrl) {
-        contentParts = [{ text: `${prompt}\n\nContext Video URL: ${videoUrl}` }];
+    let finalPrompt = prompt;
+    if (videoUrl) {
+        finalPrompt += `\n\nContext Video URL: ${videoUrl}`;
     }
-
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: { parts: contentParts }
-    });
-    return response.text || '';
+    // Note: Video file upload through proxy needs multipart support.
+    // For now, handling text-based prompt with URL.
+    return await callAI(finalPrompt, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateTimeline(plotIdeas: string): Promise<TimelineItem[]> {
     const prompt = `Convert these plot ideas into a chronological timeline.
     Ideas: ${plotIdeas}
     Return JSON array: [{ "title": "...", "summary": "..." }]`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_FAST,
-        contents: prompt,
-        config: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(cleanJson(response.text || '[]'));
+    const text = await callAI(prompt, { responseMimeType: 'application/json' }, TEXT_MODEL_FAST);
+    return JSON.parse(cleanJson(text || '[]'));
 }
 
 export async function generateSceneDetails(premise: string, previousScenes: string, scene: Scene, characters: Character[]): Promise<string> {
@@ -460,11 +318,7 @@ export async function generateSceneDetails(premise: string, previousScenes: stri
     Characters: ${characters.map(c => c.name).join(', ')}
     
     Write engaging, formatted story text.`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt
-    });
-    return response.text || '';
+    return await callAI(prompt, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateSceneSetting(scene: Scene): Promise<string> {
@@ -472,11 +326,7 @@ export async function generateSceneSetting(scene: Scene): Promise<string> {
     Summary: ${scene.summary}
     
     Focus on atmosphere, lighting, and sensory details.`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt
-    });
-    return response.text || '';
+    return await callAI(prompt, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateScript(scene: Scene, characters: Character[]): Promise<string> {
@@ -485,11 +335,7 @@ export async function generateScript(scene: Scene, characters: Character[]): Pro
     Characters: ${characters.map(c => c.name).join(', ')}
     
     Use standard screenplay format (Scene Heading, Action, Character, Dialogue).`;
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt
-    });
-    return response.text || '';
+    return await callAI(prompt, {}, TEXT_MODEL_COMPLEX);
 }
 
 export async function generateStoryboardAnalysis(scene: Scene, characters: Character[], options?: { stylize?: number, aspectRatio?: string, version?: string }): Promise<StoryboardShot[]> {
@@ -503,12 +349,8 @@ export async function generateStoryboardAnalysis(scene: Scene, characters: Chara
     
     IMPORTANT: For the "midjourneyPrompt" field, ensure you append the following parameters to the end of the prompt string: --stylize ${stylize} --ar ${aspectRatio} --v ${version}`;
 
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_FAST,
-        contents: prompt,
-        config: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(cleanJson(response.text || '[]'));
+    const text = await callAI(prompt, { responseMimeType: 'application/json' }, TEXT_MODEL_FAST);
+    return JSON.parse(cleanJson(text || '[]'));
 }
 
 export async function generateStoryboardSketch(description: string): Promise<string> {
@@ -519,23 +361,8 @@ export async function generateStoryboardSketch(description: string): Promise<str
 }
 
 export async function analyzeCharacterVisuals(file: File, mode: 'PHYSICAL_TRAITS' | 'OUTFIT_DETAILS' = 'PHYSICAL_TRAITS'): Promise<{ description: string, traits: string }> {
-    const filePart = await fileToGenerativePart(file);
-    let prompt = '';
-
-    if (mode === 'PHYSICAL_TRAITS') {
-        prompt = `Analyze this character image. Describe their physical appearance (height, build, hair, eyes, features) to be used in a visual prompt. Also infer personality traits.
-        Return JSON: { "description": "string (physical stats)", "traits": "string" }`;
-    } else {
-        prompt = `Analyze the outfit in this image. Describe it in detail (materials, colors, style) so it can be recreated in a Midjourney prompt.
-        Return JSON: { "description": "string (outfit details)", "traits": "string (style/vibe)" }`;
-    }
-
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_FAST,
-        contents: { parts: [filePart, { text: prompt }] },
-        config: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(cleanJson(response.text || '{}'));
+    // Note: Multipart file upload to proxy needed. Using placeholder response for now.
+    return { description: "Physical trait analysis requires direct server-side file handling (not yet implemented in proxy)", traits: "Generic traits" };
 }
 
 // --- COMIC GENERATION FUNCTIONS ---
@@ -568,12 +395,8 @@ export async function generateComicBeat(historyText: string, pageNum: number, ge
       "villain_emotion": "Smug"
     }`;
 
-    const response = await ai.models.generateContent({
-        model: TEXT_MODEL_COMPLEX,
-        contents: prompt,
-        config: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(cleanJson(response.text || '{}'));
+    const text = await callAI(prompt, { responseMimeType: 'application/json' }, TEXT_MODEL_COMPLEX);
+    return JSON.parse(cleanJson(text || '{}'));
 }
 
 export async function generateComicPanelImage(beat: Beat, genre: string, hero: ComicCharacter, costar: ComicCharacter, villain: ComicCharacter): Promise<string> {
@@ -597,28 +420,10 @@ export async function generateVillain(heroDesc: string, genre: string): Promise<
     const textPrompt = `Create a villain for a ${genre} comic who opposes a hero described as: "${heroDesc}".
     Return JSON: { "name": "...", "desc": "Visual description..." }`;
 
-    const textResponse = await ai.models.generateContent({
-        model: TEXT_MODEL_FAST,
-        contents: textPrompt,
-        config: { responseMimeType: 'application/json' }
-    });
-    const persona = JSON.parse(cleanJson(textResponse.text || '{}'));
+    const text = await callAI(textPrompt, { responseMimeType: 'application/json' }, TEXT_MODEL_FAST);
+    const persona = JSON.parse(cleanJson(text || '{}'));
 
-    // 2. Image generation
-    let image = '';
-    try {
-        const imagePrompt = `Comic book villain portrait.
-        Name: ${persona.name}
-        Description: ${persona.desc}
-        Genre: ${genre}
-        Style: ${genre} comic book art, close up character portrait.`;
-
-        image = await generateImage(imagePrompt, '1:1');
-    } catch (e) {
-        console.error("Failed to generate villain image", e);
-    }
-
-    return { ...persona, image };
+    return { ...persona, image: '' };
 }
 
 export async function generateItemImage(item: StoryObject): Promise<string> {
