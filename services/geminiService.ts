@@ -1,8 +1,8 @@
 import { api } from './api';
 import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebData, TimelineItem, OutlineItem, StoryboardShot, Beat, ComicCharacter, ImageStyle } from '../types';
 
-const TEXT_MODEL_COMPLEX = 'gemini-3.0-pro';
-const TEXT_MODEL_FAST = 'gemini-3.0-flash';
+const TEXT_MODEL_COMPLEX = 'gemini-3-pro-preview';
+const TEXT_MODEL_FAST = 'gemini-3-flash-preview';
 const IMAGE_MODEL = 'gemini-2.5-flash-image';
 const IMAGE_MODEL_PRO = 'gemini-3-pro-image-preview';
 
