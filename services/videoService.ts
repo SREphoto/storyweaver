@@ -1,6 +1,6 @@
 import { api } from './api';
 
-const VIDEO_MODEL = 'gemini-3-flash'; // High-speed intelligence for video prep 
+const VIDEO_MODEL = 'gemini-3-flash-preview'; // High-speed intelligence for video prep 
 
 export async function generateVideo(prompt: string, imageFile?: File): Promise<string> {
     console.warn("Video generation through bridge is limited to text-based prompts for now.");

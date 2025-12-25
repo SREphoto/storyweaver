@@ -17,7 +17,7 @@ export async function summarizeStory(storyText: string): Promise<string> {
 
     const response = await api.post('/ai/generate', {
         prompt,
-        model: 'gemini-3-flash'
+        model: 'gemini-3-flash-preview'
     });
 
     const summary = response.text?.trim() ?? '';

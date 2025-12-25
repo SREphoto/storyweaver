@@ -7,8 +7,8 @@ const router = express.Router();
 // Initialize Gemini with server-side API Key
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
-const TEXT_MODEL = 'gemini-3-flash'; // High-speed intelligence
-const IMAGE_MODEL = 'gemini-2.5-flash-image'; // Nano Banana
+const TEXT_MODEL = 'gemini-3-flash-preview'; // High-speed intelligence
+const IMAGE_MODEL = 'gemini-3-pro-image-preview'; // Nano Banana Pro
 
 // Generic AI Content Generation Endpoint
 router.post('/generate', authenticateToken, async (req: any, res) => {
