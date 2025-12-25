@@ -120,6 +120,21 @@ export const StoryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         localStorage.setItem('storyTextToAnalyze', storyTextToAnalyze);
     }, [storyTextToAnalyze]);
 
+    // --- Auto-Save Effect ---
+    useEffect(() => {
+        const sessionData = {
+            storyPremise,
+            storyTextToAnalyze,
+            characters,
+            scenes,
+            mapData,
+            savedMaterials,
+            notes,
+            items
+        };
+        localStorage.setItem('storyWeaver_project', JSON.stringify(sessionData));
+    }, [storyPremise, storyTextToAnalyze, characters, scenes, mapData, savedMaterials, notes, items]);
+
     // --- Actions ---
 
     const saveProject = async () => {
