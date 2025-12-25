@@ -3,7 +3,7 @@ import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebD
 
 const TEXT_MODEL_COMPLEX = 'gemini-3-pro-preview';
 const TEXT_MODEL_FAST = 'gemini-3-flash-preview';
-const IMAGE_MODEL = 'gemini-3-pro-image-preview'; // Nano Banana Pro / Gemini 3 Pro Image
+const IMAGE_MODEL = 'gemini-2.5-flash-image'; // Nano Banana (Stable)
 const IMAGE_MODEL_PRO = 'gemini-3-pro-image-preview';
 
 // Simple in-memory cache
