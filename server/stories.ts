@@ -7,72 +7,92 @@ const router = express.Router();
 
 // Get all stories for user
 router.get('/', authenticateToken, async (req: any, res) => {
-    await db.read();
-    const userStories = db.data.stories
-        .filter(s => s.userId === req.user.id)
-        .map(({ data, ...meta }) => meta); // Return only metadata for list
-    res.json(userStories);
+    try {
+        const userStories = await db.getStoriesByUserId(req.user.id);
+        const metadata = userStories.map(({ data, ...meta }) => meta); // Return only metadata for list
+        res.json(metadata);
+    } catch (error) {
+        console.error('[Stories] Error fetching stories:', error);
+        res.status(500).json({ error: 'Failed to fetch stories' });
+    }
 });
 
 // Get single story
 router.get('/:id', authenticateToken, async (req: any, res) => {
-    await db.read();
-    const story = db.data.stories.find(s => s.id === req.params.id && s.userId === req.user.id);
-    if (!story) return res.status(404).json({ error: 'Story not found' });
-    res.json(story);
+    try {
+        const story = await db.getStoryById(req.params.id);
+        if (!story || story.userId !== req.user.id) {
+            return res.status(404).json({ error: 'Story not found' });
+        }
+        res.json(story);
+    } catch (error) {
+        console.error('[Stories] Error fetching story:', error);
+        res.status(500).json({ error: 'Failed to fetch story' });
+    }
 });
 
 // Create story
 router.post('/', authenticateToken, async (req: any, res) => {
-    const { title, premise, data } = req.body;
-    await db.read();
+    try {
+        const { title, premise, data } = req.body;
 
-    const newStory = {
-        id: uuidv4(),
-        userId: req.user.id,
-        title: title || 'Untitled Story',
-        premise: premise || '',
-        lastUpdated: new Date().toISOString(),
-        data: data || {}
-    };
+        const newStory = {
+            id: uuidv4(),
+            userId: req.user.id,
+            title: title || 'Untitled Story',
+            premise: premise || '',
+            lastUpdated: new Date().toISOString(),
+            data: data || {}
+        };
 
-    db.data.stories.push(newStory);
-    await db.write();
-    res.status(201).json(newStory);
+        await db.addStory(newStory);
+        res.status(201).json(newStory);
+    } catch (error) {
+        console.error('[Stories] Error creating story:', error);
+        res.status(500).json({ error: 'Failed to create story' });
+    }
 });
 
 // Update story
 router.put('/:id', authenticateToken, async (req: any, res) => {
-    await db.read();
-    const storyIndex = db.data.stories.findIndex(s => s.id === req.params.id && s.userId === req.user.id);
-    if (storyIndex === -1) return res.status(404).json({ error: 'Story not found' });
+    try {
+        const story = await db.getStoryById(req.params.id);
+        if (!story || story.userId !== req.user.id) {
+            return res.status(404).json({ error: 'Story not found' });
+        }
 
-    const { title, premise, data } = req.body;
-    const updatedStory = {
-        ...db.data.stories[storyIndex],
-        title: title || db.data.stories[storyIndex].title,
-        premise: premise || db.data.stories[storyIndex].premise,
-        data: data || db.data.stories[storyIndex].data,
-        lastUpdated: new Date().toISOString()
-    };
+        const { title, premise, data } = req.body;
+        const updates = {
+            title: title || story.title,
+            premise: premise || story.premise,
+            data: data || story.data,
+            lastUpdated: new Date().toISOString()
+        };
 
-    db.data.stories[storyIndex] = updatedStory;
-    await db.write();
-    res.json(updatedStory);
+        await db.updateStory(req.params.id, updates);
+
+        const updatedStory = { ...story, ...updates };
+        res.json(updatedStory);
+    } catch (error) {
+        console.error('[Stories] Error updating story:', error);
+        res.status(500).json({ error: 'Failed to update story' });
+    }
 });
 
 // Delete story
 router.delete('/:id', authenticateToken, async (req: any, res) => {
-    await db.read();
-    const initialLength = db.data.stories.length;
-    db.data.stories = db.data.stories.filter(s => !(s.id === req.params.id && s.userId === req.user.id));
+    try {
+        const story = await db.getStoryById(req.params.id);
+        if (!story || story.userId !== req.user.id) {
+            return res.status(404).json({ error: 'Story not found' });
+        }
 
-    if (db.data.stories.length === initialLength) {
-        return res.status(404).json({ error: 'Story not found' });
+        await db.deleteStory(req.params.id);
+        res.json({ message: 'Story deleted' });
+    } catch (error) {
+        console.error('[Stories] Error deleting story:', error);
+        res.status(500).json({ error: 'Failed to delete story' });
     }
-
-    await db.write();
-    res.json({ message: 'Story deleted' });
 });
 
 export default router;

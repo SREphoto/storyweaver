@@ -15,8 +15,7 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Username and password required' });
         }
 
-        await db.read();
-        const existingUser = db.data.users.find(u => u.username === username);
+        const existingUser = await db.getUserByUsername(username);
         if (existingUser) {
             return res.status(400).json({ error: 'Username already taken' });
         }
@@ -28,12 +27,12 @@ router.post('/register', async (req, res) => {
             passwordHash
         };
 
-        db.data.users.push(newUser);
-        await db.write();
+        await db.addUser(newUser);
 
         const token = jwt.sign({ id: newUser.id, username: newUser.username }, JWT_SECRET, { expiresIn: '7d' });
         res.status(201).json({ token, user: { id: newUser.id, username: newUser.username } });
     } catch (error) {
+        console.error('[Auth] Registration error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -44,8 +43,7 @@ router.post('/login', async (req, res) => {
         const { username, password } = req.body;
         console.log(`Login attempt for username: '${username}'`);
 
-        await db.read();
-        const user = db.data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+        const user = await db.getUserByUsername(username);
 
         if (!user) {
             console.log(`Login failed: user '${username}' not found.`);
@@ -64,6 +62,7 @@ router.post('/login', async (req, res) => {
         const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
         res.json({ token, user: { id: user.id, username: user.username } });
     } catch (error) {
+        console.error('[Auth] Login error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
