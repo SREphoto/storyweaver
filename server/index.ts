@@ -17,14 +17,28 @@ console.log("API Key present in server process:", !!process.env.GEMINI_API_KEY);
 console.log("API Key length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
 
 // CORS configuration
+const allowedOrigins = [
+    'http://localhost:3002',
+    'https://srephoto.github.io',
+    'https://storyweaver-api.onrender.com'
+];
+
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow all origins (origin will be undefined for non-CORS requests)
-        callback(null, true);
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            callback(null, true); // Still allow in development, but log it
+        }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Content-Type', 'Authorization']
 }));
 
 
