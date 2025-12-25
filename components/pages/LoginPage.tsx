@@ -90,11 +90,12 @@ const LoginPage: React.FC = () => {
                     Don't have an account? <Link to="/register" className="text-brand-secondary hover:underline">Register</Link>
                 </p>
                 <div className="mt-8 pt-6 border-t border-white/10 text-center">
-                    Version {pkg.version} (Gemini 3 + Stable Image)
-                </span>
+                    <span className="text-xs font-bold text-amber-500/80 uppercase tracking-widest bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                        Version {pkg.version} (Gemini 3 + Stable Image)
+                    </span>
+                </div>
             </div>
         </div>
-        </div >
     );
 };
 
