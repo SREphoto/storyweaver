@@ -34,7 +34,7 @@ I've just fixed all these issues in your local code:
 1. **PostgreSQL Database** - No more JSON file, uses persistent database
 2. **Correct CORS** - Now explicitly allows GitHub Pages
 3. **Better Error Handling** - Proper error messages instead of crashes
-4. **Model Names** - Already correct in code (gemini-3-flash-preview, gemini-3-pro-preview)
+4. **Model Names** - Updated to **gemini-3-flash** and **gemini-3-pro** (New Standard)
 
 ---
 
@@ -82,7 +82,7 @@ git push origin main
 - Key: `DATABASE_URL`
 - Value: (Click "Internal Database URL" from your PostgreSQL database)
 
-11. Save changes
+1. Save changes
 2. Service will automatically restart
 
 ### Step 4: Verify Deployment

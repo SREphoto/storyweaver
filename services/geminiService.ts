@@ -1,10 +1,10 @@
 import { api } from './api';
 import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebData, TimelineItem, OutlineItem, StoryboardShot, Beat, ComicCharacter, ImageStyle } from '../types';
 
-const TEXT_MODEL_COMPLEX = 'gemini-3-pro-preview';
-const TEXT_MODEL_FAST = 'gemini-3-flash-preview';
-const IMAGE_MODEL = 'gemini-2.5-flash-image';
-const IMAGE_MODEL_PRO = 'gemini-3-pro-image-preview';
+const TEXT_MODEL_COMPLEX = 'gemini-3-pro';
+const TEXT_MODEL_FAST = 'gemini-3-flash';
+const IMAGE_MODEL = 'gemini-3-flash'; // Optimized for real-time multimodal
+const IMAGE_MODEL_PRO = 'gemini-3-pro';
 
 // Simple in-memory cache
 export const geminiCache = new Map<string, any>();
