@@ -13,6 +13,27 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Comic Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+.font-comic {
+    font-family: 'Comic Neue', cursive, sans-serif;
+}
+
+.font-banger {
+    font-family: 'Bangers', cursive, display;
+    letter-spacing: 0.05em;
+}
+
+.speech-bubble {
+    filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.3));
+}
+
+.comic-border {
+    border: 3px solid black;
+    box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+}
+
 a {
     font-weight: 500;
     color: #646cff;

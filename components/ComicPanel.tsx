@@ -50,15 +50,17 @@ const ComicPanel: React.FC<ComicPanelProps> = ({ imageUrl, narrative, pageIndex 
 
                 {/* Caption Box */}
                 {narrative?.caption && (
-                    <div className="bg-brand-comic-yellow border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-[80%] self-start transform -rotate-1">
-                        <p className="font-comic font-bold text-sm uppercase text-black leading-snug">{narrative.caption}</p>
+                    <div className="bg-brand-comic-yellow border-2 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-[90%] self-start transform -rotate-1 z-10 hover:scale-105 transition-transform">
+                        <p className="font-comic font-bold text-base md:text-lg uppercase text-black leading-snug tracking-wide">{narrative.caption}</p>
                     </div>
                 )}
 
                 {/* Speech Bubble */}
                 {narrative?.dialogue && (
-                    <div className="bg-white border-2 border-black p-4 rounded-[50%] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] self-end max-w-[70%] speech-bubble text-center mt-auto mb-12 mr-4">
-                        <p className="font-comic font-bold text-base text-black leading-tight">{narrative.dialogue}</p>
+                    <div className="bg-white border-2 border-black p-5 rounded-[2rem] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] self-end max-w-[85%] speech-bubble text-center mt-auto mb-12 mr-4 z-10 hover:scale-105 transition-transform relative">
+                        {/* Tail */}
+                        <div className="absolute -bottom-3 right-8 w-6 h-6 bg-white border-r-2 border-b-2 border-black transform rotate-45"></div>
+                        <p className="font-comic font-bold text-lg md:text-xl text-black leading-tight">{narrative.dialogue}</p>
                     </div>
                 )}
             </div>

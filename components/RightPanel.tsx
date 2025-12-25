@@ -54,14 +54,8 @@ const RightPanel: React.FC<RightPanelProps> = ({
     }
 
     return (
-        <aside className={`fixed inset-y-0 right-0 z-40 w-80 lg:w-96 glass-panel border-l border-white/10 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-            <button
-                onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
-                className="absolute top-1/2 -left-3 w-6 h-12 bg-brand-surface border border-white/10 rounded-l-lg flex items-center justify-center text-brand-text-muted hover:text-white cursor-pointer z-50 shadow-md"
-                title="Toggle Assistant"
-            >
-                {isRightPanelOpen ? <ChevronRightIcon className="w-4 h-4" /> : <ChevronLeftIcon className="w-4 h-4" />}
-            </button>
+        <aside className="w-full h-full flex flex-col md:border-l border-white/10 bg-brand-surface/50 backdrop-blur-xl">
+            {/* Toggle button removed, controlled by parent/header */}
 
             <div className="p-5 border-b border-white/5 bg-brand-surface/50 backdrop-blur-xl">
                 <h2 className="text-lg font-bold text-brand-text flex items-center gap-2">
