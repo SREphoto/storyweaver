@@ -3,8 +3,8 @@ import { Character, Scene, CharacterType, MapData, StoryObject, RelationshipWebD
 
 const TEXT_MODEL_COMPLEX = 'gemini-3-pro-preview';
 const TEXT_MODEL_FAST = 'gemini-3-flash-preview';
-const IMAGE_MODEL = 'imagen-3.0-generate-001'; // Imagen 3
-const IMAGE_MODEL_PRO = 'imagen-3.0-generate-001';
+const IMAGE_MODEL = 'imagen-4.0-generate-001'; // Imagen 4
+const IMAGE_MODEL_PRO = 'imagen-4.0-generate-001';
 
 // Simple in-memory cache
 export const geminiCache = new Map<string, any>();
